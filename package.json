@@ -1,11 +1,11 @@
 {
   "name": "@leomotors/music-bot",
-  "version": "1.0.0",
-  "description": "Template for creating npm library/package with TypeScript and my personalized configurations",
-  "main": "index.js",
+  "version": "0.1.0",
+  "description": "discord.js music bot components",
   "repository": "https://github.com/Leomotors/music-bot",
   "author": "Leomotors",
   "license": "MIT",
+  "main": "dist/index.js",
   "typings": "./dist/index.d.ts",
   "type": "module",
   "scripts": {
@@ -30,9 +30,13 @@
   "dependencies": {
     "@discordjs/voice": "^0.9.0",
     "@yimura/scraper": "^1.2.3",
-    "cocoa-discord-utils": "^1.5.0",
+    "cocoa-discord-utils": "^1.6.0",
     "discord.js": "^13.6.0",
     "uuid": "^8.3.2",
     "ytdl-core": "^4.11.0"
-  }
+  },
+  "keywords": [
+    "discord-bot",
+    "music-bot"
+  ]
 }

@@ -13,7 +13,14 @@ import {
 import { v4 as uuid } from "uuid";
 import { videoInfo } from "ytdl-core";
 
-import { Voice, IMusic } from "./voice";
+import {
+    musicStates,
+    Voice,
+    IMusic,
+    getState,
+    VoiceHelper,
+    YoutubeHelper,
+} from "./voice";
 
 export class Music extends CogSlashClass {
     private selectMenuHandler?: (i: SelectMenuInteraction) => Awaitable<void>;
@@ -38,8 +45,12 @@ export class Music extends CogSlashClass {
             );
     }
 
-    constructor(private client: Client, private style: EmbedStyle) {
-        super("Music", "DJ Harunon 参上!");
+    constructor(
+        private client: Client,
+        private style: EmbedStyle,
+        description?: string
+    ) {
+        super("Music", description ?? "Cog for playing musics");
 
         client.on("interactionCreate", async (interaction) => {
             if (interaction.isSelectMenu()) {
@@ -102,7 +113,7 @@ export class Music extends CogSlashClass {
             .setTitle("Added to Queue")
             .setDescription(`[${meta.title}](${metalong.video_url})`)
             .setThumbnail(
-                meta.thumbnail.thumbnails[meta.thumbnail.thumbnails.length - 1]
+                meta.thumbnail.thumbnails[meta.thumbnail.thumbnails.length - 1]!
                     .url
             )
             .addInlineFields(
@@ -153,6 +164,11 @@ export class Music extends CogSlashClass {
 
         const fullmeta = await Voice.addMusicToQueue(ctx.guildId!, song);
 
+        if (typeof fullmeta == "string") {
+            await ctx.followUp("Video not found");
+            return;
+        }
+
         const emb = this.musicEmbed(ctx, fullmeta);
 
         await ctx.followUp({ embeds: [emb] });
@@ -169,21 +185,22 @@ export class Music extends CogSlashClass {
 
     @SlashCommand(AutoBuilder("Pause the music"))
     async pause(ctx: CommandInteraction) {
-        Voice.audio_player[ctx.guildId!]?.pause();
+        musicStates[ctx.guildId!]?.audio_player?.pause();
         await ctx.reply("⏸️");
     }
 
     @SlashCommand(AutoBuilder("Resume paused music"))
     async resume(ctx: CommandInteraction) {
-        Voice.audio_player[ctx.guildId!]?.unpause();
+        musicStates[ctx.guildId!]?.audio_player?.unpause();
         await ctx.reply("▶️");
     }
 
     @SlashCommand(AutoBuilder("Toggle Loop"))
     async loop(ctx: CommandInteraction) {
-        Voice.loop = !Voice.loop;
+        const state = getState(ctx.guildId!);
+        state.is_looping = !state.is_looping;
 
-        await ctx.reply(Voice.loop ? "🔁" : "🔂");
+        await ctx.reply(state.is_looping ? "🔁" : "🔂");
     }
 
     @SlashCommand(
@@ -220,13 +237,13 @@ export class Music extends CogSlashClass {
 
         await ctx.deferReply();
 
-        const songs = await Voice.searchVideo(song);
+        const songs = await YoutubeHelper.searchVideo(song);
 
         let text = "";
         const ss = songs.slice(0, 10);
 
         for (let i = 0; i < ss.length; i++) {
-            text += `**${i + 1})** ${ss[i].title} [${ss[i].duration_raw}]\n`;
+            text += `**${i + 1})** ${ss[i]!.title} [${ss[i]!.duration_raw}]\n`;
         }
 
         const emb = this.style
@@ -239,7 +256,7 @@ export class Music extends CogSlashClass {
             return;
         }
 
-        const thisId = uuid().split("-")[0];
+        const thisId = uuid().split("-")[0]!;
 
         const menu = new MessageSelectMenu()
             .setCustomId(thisId)
@@ -272,18 +289,18 @@ export class Music extends CogSlashClass {
             await Voice.joinFromContext(ctx);
             const prom = Voice.addMusicToQueue(
                 ctx.guildId!,
-                interaction.values[0]
+                interaction.values[0]!
             );
 
             let newtext = "";
             for (let i = 0; i < ss.length; i++) {
-                if (ss[i].link == interaction.values[0]) {
-                    newtext += `**${i + 1}) ${ss[i].title} [${
-                        ss[i].duration_raw
+                if (ss[i]!.link == interaction.values[0]) {
+                    newtext += `**${i + 1}) ${ss[i]!.title} [${
+                        ss[i]!.duration_raw
                     }]**\n`;
                 } else {
-                    newtext += `~~**${i + 1})** ${ss[i].title} [${
-                        ss[i].duration_raw
+                    newtext += `~~**${i + 1})** ${ss[i]!.title} [${
+                        ss[i]!.duration_raw
                     }]~~\n`;
                 }
             }
@@ -293,7 +310,7 @@ export class Music extends CogSlashClass {
             await interaction.followUp({
                 embeds: [
                     emb.setDescription(newtext),
-                    this.musicEmbed(ctx, await prom),
+                    this.musicEmbed(ctx, (await prom) as videoInfo),
                 ],
                 components: [],
             });
@@ -303,29 +320,30 @@ export class Music extends CogSlashClass {
     }
 
     private musicToString(music: IMusic) {
-        return `[${music.detail.title} - ${music.detail.author}](${music.url})`.replace(
-            /\*/g,
+        return `[${music.detail.title} - ${music.detail.author}](${music.url})`.replaceAll(
+            "*",
             "\\*"
         );
     }
 
     @SlashCommand(AutoBuilder("Prints out the Queue!"))
     async queue(ctx: CommandInteraction) {
-        const q = Voice.music_queue[ctx.guildId!];
+        const state = getState(ctx.guildId!);
+        const q = state.music_queue;
 
         let text = "";
 
-        if (Voice.loop) text += "*Loop is currently enabled*\n";
+        if (state.is_looping) text += "*Loop is currently enabled*\n";
 
-        if (Voice.isPaused(ctx.guildId!))
+        if (VoiceHelper.isPaused(ctx.guildId!))
             text += "*Music is currently manually paused*\n";
 
-        const now_playing = Voice.now_playing[ctx.guildId!];
-
-        if (now_playing) {
+        if (state.now_playing) {
             if (text) text += "\n";
             text +=
-                "**Now Playing**\n" + this.musicToString(now_playing) + "\n";
+                "**Now Playing**\n" +
+                this.musicToString(state.now_playing) +
+                "\n";
         }
 
         if (q?.length > 0) text += "**Queue**\n";

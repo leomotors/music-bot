@@ -1,5 +1,7 @@
-# TypeScript Library Template
+# @leomotors/music-bot
 
-Template for creating npm library/package with TypeScript and my personalized configurations
+Music Bot components extracted from [harunon.js](https://github.com/CarelessDev/harunon.js)
 
-Extracted from [cocoa-discord-utils](https://github.com/Leomotors/cocoa-discord-utils)
+## How to use
+
+*todo: write this section*

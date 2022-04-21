@@ -11,7 +11,9 @@
         "skipLibCheck": true,
         "moduleResolution": "node",
         "experimentalDecorators": true,
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "noUncheckedIndexedAccess": true,
+        "incremental": true
     },
     "include": ["./src/**/*"]
 }

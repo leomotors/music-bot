@@ -26,30 +26,60 @@ export interface IMusic {
 // @ts-ignore
 export const yt: Scraper = new youtube.default();
 
-export namespace Voice {
-    export const music_queue: { [guildId: string]: IMusic[] } = {};
-    export const now_playing: { [guildId: string]: IMusic | undefined } = {};
-    export const audio_player: { [guildId: string]: AudioPlayer } = {};
+interface MusicState {
+    music_queue: IMusic[];
+    now_playing: IMusic | undefined;
+    audio_player: AudioPlayer | null;
+    is_looping: boolean;
+    is_playing: boolean;
+}
 
-    export function destroyConnection(conn: VoiceConnection | undefined) {
+const defaultMusicState: MusicState = {
+    music_queue: [],
+    now_playing: undefined,
+    audio_player: null,
+    is_looping: false,
+    is_playing: false,
+};
+
+export const musicStates: { [guildId: string]: MusicState } = {};
+
+export function getState(guildId: string) {
+    return (musicStates[guildId] ??= defaultMusicState);
+}
+
+export namespace VoiceHelper {
+    export function forceDestroyConnection(conn: VoiceConnection | undefined) {
         try {
             conn?.destroy();
         } catch (e) {}
     }
 
-    // eslint-disable-next-line prefer-const
-    export let loop = false;
-
     export function isPaused(guildId: string) {
-        return audio_player[guildId]?.state?.status == AudioPlayerStatus.Paused;
+        return (
+            getState(guildId).audio_player?.state?.status ==
+            AudioPlayerStatus.Paused
+        );
     }
+}
 
+export namespace YoutubeHelper {
+    export async function searchVideo(query: string) {
+        return (await yt.search(query)).videos;
+    }
+}
+
+export namespace Voice {
     /**
      * Joins to the channel if not already in one.
      * @returns `false` if no changes, `true` if new channel is joined
      */
     export async function joinFromContext(ctx: Context) {
         const connection = getVoiceConnection(ctx.guildId!);
+
+        if (connection?.state.status == VoiceConnectionStatus.Ready) {
+            return false;
+        }
 
         const voiceChannel = (ctx.member as GuildMember | undefined)?.voice
             .channel as VoiceChannel | undefined;
@@ -59,10 +89,6 @@ export namespace Voice {
         const guild = ctx.client.guilds.cache.get(ctx.guildId!);
 
         if (!guild?.available) return false;
-
-        if (connection?.state.status == VoiceConnectionStatus.Ready) {
-            return false;
-        }
 
         await Voice.joinVoiceChannel(voiceChannel);
 
@@ -98,7 +124,7 @@ export namespace Voice {
                 // Seems to be reconnecting to a new channel - ignore disconnect
             } catch (error) {
                 // Seems to be a real disconnect which SHOULDN'T be recovered from
-                destroyConnection(connection);
+                VoiceHelper.forceDestroyConnection(connection);
                 await onDisconnect?.();
             }
         });
@@ -111,28 +137,23 @@ export namespace Voice {
         }
     }
 
-    export async function searchVideo(query: string) {
-        return (await yt.search(query)).videos;
-    }
-
-    let isPlaying = false;
-
     /**
      * Add music to queue and play it if not playing
      * @returns Meta Info of the Video
      */
     export async function addMusicToQueue(guildId: string, url: string) {
         if (!ytdl.validateURL(url)) {
-            url = (await searchVideo(url))[0].link;
+            url = (await YoutubeHelper.searchVideo(url))[0]?.link ?? "";
+            if (!url) return "No results found";
         }
 
         const meta = await ytdl.getInfo(url);
         const detail = meta.player_response.videoDetails;
 
-        music_queue[guildId] ??= [];
-        music_queue[guildId].push({ url, detail, rawmeta: meta });
+        const state = getState(guildId);
+        state.music_queue.push({ url, detail, rawmeta: meta });
 
-        if (!isPlaying) playNextMusicInQueue(guildId);
+        if (!state.is_playing) playNextMusicInQueue(guildId);
 
         return meta;
     }
@@ -143,24 +164,26 @@ export namespace Voice {
      * false immediately if no connection found or later when error occured
      */
     export function playNextMusicInQueue(guildId: string) {
-        if (loop && now_playing[guildId]) {
-            music_queue[guildId].push(now_playing[guildId]!);
+        const state = getState(guildId);
+
+        if (state.is_looping && state.now_playing) {
+            state.music_queue.push(state.now_playing);
         }
 
-        if (music_queue[guildId]?.length < 1) {
-            isPlaying = false;
-            destroyConnection(getVoiceConnection(guildId));
+        if (state.music_queue.length < 1) {
+            state.is_playing = false;
+            VoiceHelper.forceDestroyConnection(getVoiceConnection(guildId));
             return;
         }
 
-        const music = music_queue[guildId]!.shift()!;
-        now_playing[guildId] = music;
+        const music = state.music_queue.shift()!;
+        state.now_playing = music;
 
         const connection = getVoiceConnection(guildId);
         if (!connection) return false;
 
         const audioPlayer = createAudioPlayer();
-        audio_player[guildId] = audioPlayer;
+        state.audio_player = audioPlayer;
         connection.subscribe(audioPlayer);
 
         const stream = ytdl.downloadFromInfo(music.rawmeta, {
@@ -173,7 +196,7 @@ export namespace Voice {
         const resource = createAudioResource(stream);
         audioPlayer.play(resource);
 
-        isPlaying = true;
+        state.is_playing = true;
 
         return new Promise<boolean>((resolve, reject) => {
             audioPlayer.on(AudioPlayerStatus.Idle, () => {
@@ -203,19 +226,19 @@ export namespace Voice {
      * and disconnect from voice
      */
     export function clearMusicQueue(guildId: string) {
-        music_queue[guildId] = [];
+        const state = getState(guildId);
 
-        audio_player[guildId]?.stop();
+        state.music_queue = [];
+        state.audio_player?.stop();
+        state.now_playing = undefined;
+        state.is_looping = false;
 
-        now_playing[guildId] = undefined;
-
-        loop = false;
-
-        destroyConnection(getVoiceConnection(guildId));
+        VoiceHelper.forceDestroyConnection(getVoiceConnection(guildId));
     }
 
     /** @returns Removed Music or undefined if index out of bound */
     export function removeFromQueue(guildId: string, index: number) {
-        return music_queue[guildId]?.splice(index - 1, 1)?.[0];
+        const state = getState(guildId);
+        return state.music_queue.splice(index - 1, 1)?.[0];
     }
 }
