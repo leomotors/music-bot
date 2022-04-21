@@ -1,6 +1,6 @@
 {
   "name": "@leomotors/music-bot",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "discord.js music bot components",
   "repository": "https://github.com/Leomotors/music-bot",
   "author": "Leomotors",
@@ -13,7 +13,8 @@
     "build": "yarn lm-config && yarn build-inner",
     "format": "prettier --write \"{src,tests}/**/*.ts\"",
     "lint": "eslint src && prettier --check \"{src,tests}/**/*.ts\"",
-    "test": "node --es-module-specifier-resolution=node tests/index.js"
+    "test": "node --es-module-specifier-resolution=node tests/index.js",
+    "prepack": "rimraf dist/* && yarn build && yarn lint && yarn test"
   },
   "devDependencies": {
     "@leomotors/scripts": "^3.1.0",
