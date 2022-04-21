@@ -8,4 +8,22 @@ Music Bot components extracted from [harunon.js](https://github.com/CarelessDev/
 
 ## How to use
 
-*todo: write this section*
+This package has 2 parts, the underlying mechanics and the part that consume it.
+
+This package exports Music Cog which is compatible to [cocoa-discord-utils](https://github.com/Leomotors/cocoa-discord-utils)
+
+You can import, create and add to center normally.
+
+## ✨Features
+
+- play from YouTube
+
+- queue
+
+- pause / resume
+
+- Loop
+
+- Remove from Queue and Clear
+
+- Search with beautiful embeds
