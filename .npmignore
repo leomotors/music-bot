@@ -1,3 +1,2 @@
 *
-!dist/**/*
-*.tsbuildinfo
+!dist/**/*.{js,cjs,mjs,ts,d.ts,json}

@@ -1,3 +1,3 @@
 # Changelog
 
-All notables change for {package-name} will be noted here
+All notables change for @leomotors/music-bot will be noted here

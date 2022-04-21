@@ -165,7 +165,7 @@ export class Music extends CogSlashClass {
         const fullmeta = await Voice.addMusicToQueue(ctx.guildId!, song);
 
         if (typeof fullmeta == "string") {
-            await ctx.followUp("Video not found");
+            await ctx.followUp("Cannot find any video with that name");
             return;
         }
 
