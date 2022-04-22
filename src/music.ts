@@ -6,8 +6,8 @@ import {
     Awaitable,
     CommandInteraction,
     Client,
-    MessageActionRow,
-    MessageSelectMenu,
+    ActionRowBuilder,
+    SelectMenuBuilder,
     SelectMenuInteraction,
 } from "discord.js";
 
@@ -254,7 +254,7 @@ export class Music extends CogSlashClass {
 
         const thisId = uuid().split("-")[0]!;
 
-        const menu = new MessageSelectMenu()
+        const menu = new SelectMenuBuilder()
             .setCustomId(thisId)
             .setPlaceholder("Select your Song")
             .setMinValues(1)
@@ -272,7 +272,7 @@ export class Music extends CogSlashClass {
                 })
             );
 
-        const row = new MessageActionRow().addComponents(menu);
+        const row = new ActionRowBuilder().addComponents(menu);
 
         this.selectMenuHandler = async (interaction) => {
             if (interaction.customId != thisId) {
