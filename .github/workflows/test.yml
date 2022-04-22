@@ -19,5 +19,3 @@ jobs:
         run: yarn build
       - name: ESLint & Prettier Check
         run: yarn lint
-      - name: Not Mocha Test
-        run: yarn test

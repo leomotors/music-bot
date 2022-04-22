@@ -14,6 +14,15 @@ This package exports Music Cog which is compatible to [cocoa-discord-utils](http
 
 You can import, create and add to center normally.
 
+*See Example at tests/index.js*
+
+## Prerequisites
+
+- node 16 (Minimum required by discord.js, What my bots are optimized for)
+
+- **IMPORTANT** [Encoding Libraries](https://www.npmjs.com/package/@discordjs/voice#dependencies)
+(This library does not ship these encoding libraries, so you can freely decide which one to install)
+
 ## ✨Features
 
 - play from YouTube
@@ -27,3 +36,7 @@ You can import, create and add to center normally.
 - Remove from Queue and Clear
 
 - Search with beautiful embeds
+
+## Note
+
+- This module has its cog named "Music", be sure to not creating a duplicate name

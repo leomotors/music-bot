@@ -1,7 +1,7 @@
-import chalk from "chalk";
 import { EmbedStyle } from "cocoa-discord-utils";
 import { CogSlashClass, SlashCommand } from "cocoa-discord-utils/slash/class";
 import { AutoBuilder, CocoaOption } from "cocoa-discord-utils/template";
+
 import {
     Awaitable,
     CommandInteraction,
@@ -10,6 +10,8 @@ import {
     MessageSelectMenu,
     SelectMenuInteraction,
 } from "discord.js";
+
+import chalk from "chalk";
 import { v4 as uuid } from "uuid";
 import { videoInfo } from "ytdl-core";
 
@@ -24,6 +26,7 @@ import {
 
 export class Music extends CogSlashClass {
     private selectMenuHandler?: (i: SelectMenuInteraction) => Awaitable<void>;
+    private garbage = new Set<string>();
 
     /**
      * Try to remove components from that select menu and add a message,
@@ -36,10 +39,10 @@ export class Music extends CogSlashClass {
                     "This interaction is no longer tracked! Please create new one!",
                 components: [],
             })
-            .catch((_) =>
+            .catch(() =>
                 console.log(
                     chalk.red(
-                        `Unknown Select Menu Interaction and cannot update ${interaction.customId}`
+                        `Attempt to delete components failed: ${interaction.customId}`
                     )
                 )
             );
@@ -50,25 +53,19 @@ export class Music extends CogSlashClass {
         private style: EmbedStyle,
         description?: string
     ) {
-        super("Music", description ?? "Cog for playing musics");
+        super("Music", description ?? "Cog for playing musics from YouTube");
 
         client.on("interactionCreate", async (interaction) => {
-            if (interaction.isSelectMenu()) {
-                if (this.selectMenuHandler) {
-                    try {
-                        await this.selectMenuHandler(interaction);
-                    } catch (err) {
-                        console.log(
-                            chalk.red(
-                                `Error while handling Select Menu: ${err}`
-                            )
-                        );
-                        await interaction.channel
-                            ?.send(`${err}`)
-                            .catch(console.error);
-                    }
-                } else {
-                    this.yeetSelectMenu(interaction);
+            if (interaction.isSelectMenu() && this.selectMenuHandler) {
+                try {
+                    await this.selectMenuHandler(interaction);
+                } catch (err) {
+                    console.log(
+                        chalk.red(`Error while handling Select Menu: ${err}`)
+                    );
+                    await interaction.channel
+                        ?.send(`${err}`)
+                        .catch(console.error);
                 }
             }
         });
@@ -105,7 +102,6 @@ export class Music extends CogSlashClass {
 
     private musicEmbed(ctx: CommandInteraction, fullmeta: videoInfo) {
         const meta = fullmeta.player_response.videoDetails;
-
         const metalong = fullmeta.videoDetails;
 
         const emb = this.style
@@ -151,8 +147,8 @@ export class Music extends CogSlashClass {
     }
 
     @SlashCommand(
-        AutoBuilder("Play a song!").addStringOption(
-            CocoaOption("song", "Song to play", true)
+        AutoBuilder("Play a song/video from YouTube").addStringOption(
+            CocoaOption("song", "Youtube URL or Search Query", true)
         )
     )
     async play(ctx: CommandInteraction) {
@@ -183,13 +179,13 @@ export class Music extends CogSlashClass {
         return `${p1} ${p2}`;
     }
 
-    @SlashCommand(AutoBuilder("Pause the music"))
+    @SlashCommand(AutoBuilder("Pause the song"))
     async pause(ctx: CommandInteraction) {
         musicStates[ctx.guildId!]?.audio_player?.pause();
         await ctx.reply("⏸️");
     }
 
-    @SlashCommand(AutoBuilder("Resume paused music"))
+    @SlashCommand(AutoBuilder("Resume paused song"))
     async resume(ctx: CommandInteraction) {
         musicStates[ctx.guildId!]?.audio_player?.unpause();
         await ctx.reply("▶️");
@@ -204,7 +200,7 @@ export class Music extends CogSlashClass {
     }
 
     @SlashCommand(
-        AutoBuilder("Remove x-th music from queue").addIntegerOption(
+        AutoBuilder("Remove x-th song from the queue").addIntegerOption(
             CocoaOption("index", "Index of removal", true)
         )
     )
@@ -228,8 +224,8 @@ export class Music extends CogSlashClass {
     }
 
     @SlashCommand(
-        AutoBuilder("Search Musics").addStringOption(
-            CocoaOption("song", "What to search", true)
+        AutoBuilder("Search for Song on YouTube").addStringOption(
+            CocoaOption("song", "What to search for", true)
         )
     )
     async search(ctx: CommandInteraction) {
@@ -280,7 +276,9 @@ export class Music extends CogSlashClass {
 
         this.selectMenuHandler = async (interaction) => {
             if (interaction.customId != thisId) {
-                this.yeetSelectMenu(interaction);
+                // * Old Interaction
+                if (this.garbage.has(interaction.customId))
+                    this.yeetSelectMenu(interaction);
                 return;
             }
 
@@ -314,6 +312,8 @@ export class Music extends CogSlashClass {
                 ],
                 components: [],
             });
+
+            this.garbage.add(thisId);
         };
 
         await ctx.followUp({ embeds: [emb], components: [row] });
@@ -326,7 +326,7 @@ export class Music extends CogSlashClass {
         );
     }
 
-    @SlashCommand(AutoBuilder("Prints out the Queue!"))
+    @SlashCommand(AutoBuilder("Prints out the current Queue"))
     async queue(ctx: CommandInteraction) {
         const state = getState(ctx.guildId!);
         const q = state.music_queue;
@@ -360,14 +360,14 @@ export class Music extends CogSlashClass {
         await ctx.reply({ embeds: [emb] });
     }
 
-    @SlashCommand(AutoBuilder("Skip the current song!"))
+    @SlashCommand(AutoBuilder("Skip the current song"))
     async skip(ctx: CommandInteraction) {
         Voice.skipMusic(ctx.guildId!);
 
         await ctx.reply("⏩");
     }
 
-    @SlashCommand(AutoBuilder("Clear all songs in the queue"))
+    @SlashCommand(AutoBuilder("Clear all songs in the queue and stop playing"))
     async clear(ctx: CommandInteraction) {
         Voice.clearMusicQueue(ctx.guildId!);
 

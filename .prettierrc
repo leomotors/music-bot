@@ -6,6 +6,10 @@
     "semi": true,
     "printWidth": 80,
     "importOrder": [
+        "^dotenv",
+        "^cocoa-discord-utils",
+        "^discord.js",
+        "^@discordjs",
         "^[a-zA-Z]",
         "^[.][.]",
         "^[.]"

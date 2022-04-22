@@ -1,3 +1,10 @@
+import youtube, { Scraper } from "@yimura/scraper";
+
+import { Context } from "cocoa-discord-utils";
+import { Awaitable } from "cocoa-discord-utils/internal/base";
+
+import { GuildMember, VoiceChannel } from "discord.js";
+
 import {
     AudioPlayer,
     AudioPlayerStatus,
@@ -10,11 +17,7 @@ import {
     VoiceConnection,
     VoiceConnectionStatus,
 } from "@discordjs/voice";
-import youtube, { Scraper } from "@yimura/scraper";
 
-import { Context } from "cocoa-discord-utils";
-import { Awaitable } from "cocoa-discord-utils/internal/base";
-import { GuildMember, VoiceChannel } from "discord.js";
 import ytdl, { VideoDetails, videoInfo } from "ytdl-core";
 
 export interface IMusic {
@@ -24,7 +27,7 @@ export interface IMusic {
 }
 
 // @ts-ignore
-export const yt: Scraper = new youtube.default();
+export const yt = new youtube.default() as Scraper;
 
 interface MusicState {
     music_queue: IMusic[];
@@ -32,6 +35,7 @@ interface MusicState {
     audio_player: AudioPlayer | null;
     is_looping: boolean;
     is_playing: boolean;
+    channel_id: string | null;
 }
 
 const defaultMusicState: MusicState = {
@@ -40,6 +44,7 @@ const defaultMusicState: MusicState = {
     audio_player: null,
     is_looping: false,
     is_playing: false,
+    channel_id: null,
 };
 
 export const musicStates: { [guildId: string]: MusicState } = {};
