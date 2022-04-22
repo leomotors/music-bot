@@ -10,11 +10,12 @@ Music Bot components extracted from [harunon.js](https://github.com/CarelessDev/
 
 This package has 2 parts, the underlying mechanics and the part that consume it.
 
-This package exports Music Cog which is compatible to [cocoa-discord-utils](https://github.com/Leomotors/cocoa-discord-utils)
+You likely only want to import complete Music Cog which is compatible to [cocoa-discord-utils](https://github.com/Leomotors/cocoa-discord-utils)
 
-You can import, create and add to center normally.
+*See Example at tests/bot.js*
 
-*See Example at tests/index.js*
+Apart from that, if you can understand the code [src/voice.ts](src/voice.ts),
+you can directly interact with api underneath, all of them is public.
 
 ## Prerequisites
 
@@ -40,3 +41,5 @@ You can import, create and add to center normally.
 ## Note
 
 - This module has its cog named "Music", be sure to not creating a duplicate name
+
+- Despite cocoa-discord-utils supports CommonJS, this module does not

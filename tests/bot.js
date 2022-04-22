@@ -7,9 +7,12 @@ import { DJCocoaOptions } from "cocoa-discord-utils/template";
 
 import { Client } from "discord.js";
 
+// import { Music } from "@leomotors/music-bot"
 import { Music } from "../dist";
 
-// * A simple discord bot to test this cog module
+// * A simple discord bot to E2E (manually) test this cog module
+// * Also minimum code required to fire the bot
+// * Good Example!
 
 const client = new Client(DJCocoaOptions);
 const style = new EmbedStyle({
