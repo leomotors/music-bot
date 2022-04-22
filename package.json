@@ -1,6 +1,6 @@
 {
   "name": "@leomotors/music-bot",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "discord.js music bot components",
   "repository": "https://github.com/Leomotors/music-bot",
   "author": "Leomotors",
@@ -35,7 +35,7 @@
   "dependencies": {
     "@discordjs/voice": "^0.9.0",
     "@yimura/scraper": "^1.2.3",
-    "cocoa-discord-utils": "^1.6.0",
+    "cocoa-discord-utils": "^2.0.0-beta.1",
     "discord.js": "^14.0.0-dev.1650586180-61a44c5",
     "uuid": "^8.3.2",
     "ytdl-core": "^4.11.0"

@@ -7,9 +7,12 @@ import { DJCocoaOptions } from "cocoa-discord-utils/template";
 
 import { Client } from "discord.js";
 
+// import { Music } from "@leomotors/music-bot"
 import { Music } from "../dist";
 
-// * A simple discord bot to test this cog module
+// * A simple discord bot to E2E (manually) test this cog module
+// * Also minimum code required to fire the bot
+// * Good Example!
 
 const client = new Client(DJCocoaOptions);
 const style = new EmbedStyle({
@@ -21,6 +24,16 @@ const style = new EmbedStyle({
 const center = new SlashCenter(client, process.env.GUILD_IDS?.split(","));
 center.addCog(new Music(client, style));
 center.useHelpCommand(style);
+center.on("error", (name, err, ctx) => {
+    // * FOR DEBUG PURPOSES ONLY, Don't do this on production
+    client.destroy();
+    setTimeout(() => {
+        throw err;
+    }, 100);
+
+    // * Note: What you should do on Production
+    // await ctx.channel?.send(`Error ${err}`);
+});
 
 client.on("ready", (cli) => {
     console.log(`Logged in as ${cli.user.tag}`);

@@ -3,10 +3,10 @@ import { CogSlashClass, SlashCommand } from "cocoa-discord-utils/slash/class";
 import { AutoBuilder, CocoaOption } from "cocoa-discord-utils/template";
 
 import {
-    Awaitable,
-    CommandInteraction,
-    Client,
     ActionRowBuilder,
+    Awaitable,
+    ChatInputCommandInteraction,
+    Client,
     SelectMenuBuilder,
     SelectMenuInteraction,
 } from "discord.js";
@@ -100,7 +100,7 @@ export class Music extends CogSlashClass {
         return res.trim();
     }
 
-    private musicEmbed(ctx: CommandInteraction, fullmeta: videoInfo) {
+    private musicEmbed(ctx: ChatInputCommandInteraction, fullmeta: videoInfo) {
         const meta = fullmeta.player_response.videoDetails;
         const metalong = fullmeta.videoDetails;
 
@@ -151,7 +151,7 @@ export class Music extends CogSlashClass {
             CocoaOption("song", "Youtube URL or Search Query", true)
         )
     )
-    async play(ctx: CommandInteraction) {
+    async play(ctx: ChatInputCommandInteraction) {
         const song = ctx.options.getString("song", true);
 
         await ctx.deferReply();
@@ -180,19 +180,19 @@ export class Music extends CogSlashClass {
     }
 
     @SlashCommand(AutoBuilder("Pause the song"))
-    async pause(ctx: CommandInteraction) {
+    async pause(ctx: ChatInputCommandInteraction) {
         musicStates[ctx.guildId!]?.audio_player?.pause();
         await ctx.reply("⏸️");
     }
 
     @SlashCommand(AutoBuilder("Resume paused song"))
-    async resume(ctx: CommandInteraction) {
+    async resume(ctx: ChatInputCommandInteraction) {
         musicStates[ctx.guildId!]?.audio_player?.unpause();
         await ctx.reply("▶️");
     }
 
     @SlashCommand(AutoBuilder("Toggle Loop"))
-    async loop(ctx: CommandInteraction) {
+    async loop(ctx: ChatInputCommandInteraction) {
         const state = getState(ctx.guildId!);
         state.is_looping = !state.is_looping;
 
@@ -204,7 +204,7 @@ export class Music extends CogSlashClass {
             CocoaOption("index", "Index of removal", true)
         )
     )
-    async remove(ctx: CommandInteraction) {
+    async remove(ctx: ChatInputCommandInteraction) {
         const index = ctx.options.getInteger("index", true);
 
         if (index <= 0) {
@@ -228,7 +228,7 @@ export class Music extends CogSlashClass {
             CocoaOption("song", "What to search for", true)
         )
     )
-    async search(ctx: CommandInteraction) {
+    async search(ctx: ChatInputCommandInteraction) {
         const song = ctx.options.getString("song", true);
 
         await ctx.deferReply();
@@ -272,7 +272,8 @@ export class Music extends CogSlashClass {
                 })
             );
 
-        const row = new ActionRowBuilder().addComponents(menu);
+        // @ts-expect-error
+        const row = new ActionRowBuilder().addComponents([menu]);
 
         this.selectMenuHandler = async (interaction) => {
             if (interaction.customId != thisId) {
@@ -316,6 +317,9 @@ export class Music extends CogSlashClass {
             this.garbage.add(thisId);
         };
 
+        console.log("CAN CONSTRUCT");
+
+        // @ts-expect-error
         await ctx.followUp({ embeds: [emb], components: [row] });
     }
 
@@ -327,7 +331,7 @@ export class Music extends CogSlashClass {
     }
 
     @SlashCommand(AutoBuilder("Prints out the current Queue"))
-    async queue(ctx: CommandInteraction) {
+    async queue(ctx: ChatInputCommandInteraction) {
         const state = getState(ctx.guildId!);
         const q = state.music_queue;
 
@@ -361,14 +365,14 @@ export class Music extends CogSlashClass {
     }
 
     @SlashCommand(AutoBuilder("Skip the current song"))
-    async skip(ctx: CommandInteraction) {
+    async skip(ctx: ChatInputCommandInteraction) {
         Voice.skipMusic(ctx.guildId!);
 
         await ctx.reply("⏩");
     }
 
     @SlashCommand(AutoBuilder("Clear all songs in the queue and stop playing"))
-    async clear(ctx: CommandInteraction) {
+    async clear(ctx: ChatInputCommandInteraction) {
         Voice.clearMusicQueue(ctx.guildId!);
 
         await ctx.reply("Cleared!");
