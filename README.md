@@ -12,10 +12,21 @@ This package has 2 parts, the underlying mechanics and the part that consume it.
 
 You likely only want to import complete Music Cog which is compatible to [cocoa-discord-utils](https://github.com/Leomotors/cocoa-discord-utils)
 
-*See Example at tests/bot.js*
+See Example at [tests/bot.js](./tests/bot.js)
 
 Apart from that, if you can understand the code [src/voice.ts](src/voice.ts),
 you can directly interact with api underneath, all of them is public.
+
+### Minimal Usage
+
+- Clone this repository, build the package and run tests/bot.js
+
+- Adjust and add some codes to personalize the bot
+
+### Advanced Usage
+
+- Import music module to existing bot that use [Cocoa Discord Utils](https://github.com/Leomotors/cocoa-discord-utils)
+(See [harunon.js](https://github.com/CarelessDev/harunon.js) for example)
 
 ## Prerequisites
 
@@ -43,3 +54,5 @@ you can directly interact with api underneath, all of them is public.
 - This module has its cog named "Music", be sure to not creating a duplicate name
 
 - Despite cocoa-discord-utils supports CommonJS, this module does not
+
+- This module is still in beta, not implemented features includes but not limited to: Working in edge cases for example, user invoke command without being in voice channel
