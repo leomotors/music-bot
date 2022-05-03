@@ -38,19 +38,21 @@ interface MusicState {
     channel_id: string | null;
 }
 
-const defaultMusicState: MusicState = {
-    music_queue: [],
-    now_playing: undefined,
-    audio_player: null,
-    is_looping: false,
-    is_playing: false,
-    channel_id: null,
-};
+function defaultMusicState() {
+    return {
+        music_queue: [],
+        now_playing: undefined,
+        audio_player: null,
+        is_looping: false,
+        is_playing: false,
+        channel_id: null,
+    };
+}
 
 export const musicStates: { [guildId: string]: MusicState } = {};
 
 export function getState(guildId: string) {
-    return (musicStates[guildId] ??= defaultMusicState);
+    return (musicStates[guildId] ??= defaultMusicState());
 }
 
 export namespace VoiceHelper {
