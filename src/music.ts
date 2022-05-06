@@ -146,6 +146,26 @@ export class Music extends CogSlashClass {
         return emb;
     }
 
+    /**
+     * @returns `true` if should ends the function,
+     * it will followUp the interaction printing error message
+     */
+    private async joinHook(ctx: CommandInteraction, force = false) {
+        const res = await Voice.joinFromContext(ctx, force);
+
+        if (res == Voice.JoinFailureReason.NoChannel) {
+            await ctx.followUp("Command Failed: No channel to join");
+        } else if (res == Voice.JoinFailureReason.NotJoinable) {
+            await ctx.followUp("Command Failed: This channel is not joinable");
+        } else if (res == Voice.JoinFailureReason.Other) {
+            await ctx.followUp("Command Failed: Unknown Reason");
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+
     @SlashCommand(
         AutoBuilder("Play a song/video from YouTube").addStringOption(
             CocoaOption("song", "Youtube URL or Search Query", true)
@@ -156,7 +176,7 @@ export class Music extends CogSlashClass {
 
         await ctx.deferReply();
 
-        await Voice.joinFromContext(ctx);
+        if (await this.joinHook(ctx)) return;
 
         const fullmeta = await Voice.addMusicToQueue(ctx.guildId!, song);
 
@@ -181,14 +201,16 @@ export class Music extends CogSlashClass {
 
     @SlashCommand(AutoBuilder("Pause the song"))
     async pause(ctx: CommandInteraction) {
-        musicStates[ctx.guildId!]?.audio_player?.pause();
-        await ctx.reply("⏸️");
+        if (musicStates[ctx.guildId!]?.audio_player?.pause())
+            await ctx.reply("⏸️");
+        else await ctx.reply("❓");
     }
 
     @SlashCommand(AutoBuilder("Resume paused song"))
     async resume(ctx: CommandInteraction) {
-        musicStates[ctx.guildId!]?.audio_player?.unpause();
-        await ctx.reply("▶️");
+        if (musicStates[ctx.guildId!]?.audio_player?.unpause())
+            await ctx.reply("▶️");
+        else await ctx.reply("❓");
     }
 
     @SlashCommand(AutoBuilder("Toggle Loop"))
@@ -284,7 +306,7 @@ export class Music extends CogSlashClass {
 
             await interaction.deferUpdate();
 
-            await Voice.joinFromContext(ctx);
+            if (await this.joinHook(ctx)) return;
             const prom = Voice.addMusicToQueue(
                 ctx.guildId!,
                 interaction.values[0]!
@@ -367,10 +389,21 @@ export class Music extends CogSlashClass {
         await ctx.reply("⏩");
     }
 
-    @SlashCommand(AutoBuilder("Clear all songs in the queue and stop playing"))
+    @SlashCommand(
+        AutoBuilder(
+            "Clear all songs in the queue, stop playing and leave the channel"
+        )
+    )
     async clear(ctx: CommandInteraction) {
         Voice.clearMusicQueue(ctx.guildId!);
 
         await ctx.reply("Cleared!");
+    }
+
+    @SlashCommand(AutoBuilder("(Force) moves the bot to your voice channel"))
+    async rejoin(ctx: CommandInteraction) {
+        if (await this.joinHook(ctx, true)) return;
+
+        await ctx.reply("✅ Rejoined");
     }
 }

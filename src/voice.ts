@@ -77,31 +77,43 @@ export namespace YoutubeHelper {
 }
 
 export namespace Voice {
+    export enum JoinFailureReason {
+        Success,
+        AlreadyConnected,
+        NoChannel,
+        NotJoinable,
+        Other,
+    }
+
     /**
      * Joins to the channel if not already in one.
-     * @returns `false` if no changes, `true` if new channel is joined
      */
-    export async function joinFromContext(ctx: Context) {
+    export async function joinFromContext(
+        ctx: Context,
+        force = false
+    ): Promise<JoinFailureReason> {
         const connection = getVoiceConnection(ctx.guildId!);
 
-        if (connection?.state.status == VoiceConnectionStatus.Ready) {
-            return false;
+        if (connection?.state.status == VoiceConnectionStatus.Ready && !force) {
+            return JoinFailureReason.AlreadyConnected;
         }
 
         const voiceChannel = (ctx.member as GuildMember | undefined)?.voice
             .channel as VoiceChannel | undefined;
 
-        if (!voiceChannel) return false;
+        if (!voiceChannel) return JoinFailureReason.NoChannel;
 
-        const guild = ctx.client.guilds.cache.get(ctx.guildId!);
+        if (!voiceChannel.joinable) return JoinFailureReason.NotJoinable;
 
-        if (!guild?.available) return false;
-
-        await Voice.joinVoiceChannel(voiceChannel);
-
-        return true;
+        return (await Voice.joinVoiceChannel(voiceChannel))
+            ? JoinFailureReason.Success
+            : JoinFailureReason.Other;
     }
 
+    /**
+     * Joins voice channel
+     * @returns Connection
+     */
     export async function joinVoiceChannel(
         channel: VoiceChannel,
         onDisconnect?: () => Awaitable<void>
@@ -138,6 +150,7 @@ export namespace Voice {
 
         try {
             await entersState(connection, VoiceConnectionStatus.Ready, 5_000);
+            getState(channel.guildId).channel_id = channel.id;
             return connection;
         } catch (err) {
             return undefined;
@@ -146,7 +159,7 @@ export namespace Voice {
 
     /**
      * Add music to queue and play it if not playing
-     * @returns Meta Info of the Video
+     * @returns Meta Info of the Video or string indicating failure reason
      */
     export async function addMusicToQueue(guildId: string, url: string) {
         if (!ytdl.validateURL(url)) {
@@ -167,8 +180,8 @@ export namespace Voice {
 
     /**
      * @param guildId
-     * @returns true if music finished successfully,
-     * false immediately if no connection found or later when error occured
+     * @returns `true` if music finished successfully,
+     * `false` early if no connection found or later when error occured
      */
     export function playNextMusicInQueue(guildId: string) {
         const state = getState(guildId);
@@ -180,6 +193,7 @@ export namespace Voice {
         if (state.music_queue.length < 1) {
             state.is_playing = false;
             VoiceHelper.forceDestroyConnection(getVoiceConnection(guildId));
+            state.channel_id = null;
             return;
         }
 
