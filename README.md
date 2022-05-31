@@ -49,6 +49,16 @@ you can directly interact with api underneath, all of them is public.
 
 - Search with beautiful embeds
 
+## 🖼️ Highlight
+
+- ✨ Search Feature
+
+![](./images/search1.png)
+
+![](./images/search2.png)
+
+*Note: It is known issues that search feature summon duplicate embed, I blame discord.js for this bug*
+
 ## Note
 
 - This module has its cog named "Music", be sure to not creating a duplicate name
