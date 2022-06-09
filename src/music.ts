@@ -25,14 +25,14 @@ import {
 } from "./voice";
 
 export class Music extends CogSlashClass {
-    private selectMenuHandler?: (i: SelectMenuInteraction) => Awaitable<void>;
-    private garbage = new Set<string>();
+    protected selectMenuHandler?: (i: SelectMenuInteraction) => Awaitable<void>;
+    protected garbage = new Set<string>();
 
     /**
      * Try to remove components from that select menu and add a message,
      * catch error and prints if failed
      */
-    private async yeetSelectMenu(interaction: SelectMenuInteraction) {
+    protected async yeetSelectMenu(interaction: SelectMenuInteraction) {
         await interaction
             .update({
                 content:
@@ -71,7 +71,7 @@ export class Music extends CogSlashClass {
         });
     }
 
-    private parseLength(seconds: number) {
+    protected parseLength(seconds: number) {
         const minutes = Math.floor(seconds / 60);
 
         seconds %= 60;
@@ -80,7 +80,7 @@ export class Music extends CogSlashClass {
     }
 
     /** Only works for positive number */
-    private beautifyNumber(
+    protected beautifyNumber(
         n: number | string | undefined | null,
         fallback = "Unknown"
     ) {
@@ -100,7 +100,7 @@ export class Music extends CogSlashClass {
         return res.trim();
     }
 
-    private musicEmbed(
+    protected musicEmbed(
         ctx: CommandInteraction,
         requester: string,
         fullmeta: videoInfo,
@@ -159,7 +159,7 @@ export class Music extends CogSlashClass {
      * @returns `true` if should ends the function,
      * it will followUp the interaction printing error message
      */
-    private async joinHook(ctx: CommandInteraction, force = false) {
+    protected async joinHook(ctx: CommandInteraction, force = false) {
         const res = await Voice.joinFromContext(ctx, force);
 
         if (res == Voice.JoinFailureReason.NoChannel) {
@@ -203,7 +203,7 @@ export class Music extends CogSlashClass {
         await ctx.followUp({ embeds: [emb] });
     }
 
-    private trimLabel(p1: string, p2: string) {
+    protected trimLabel(p1: string, p2: string) {
         const lenlim = 96 - p2.length;
         if (p1.length > 96 - p2.length) {
             p1 = p1.slice(0, lenlim - 3) + "...";
@@ -396,7 +396,7 @@ export class Music extends CogSlashClass {
         await ctx.followUp({ embeds: [emb], components: [row] });
     }
 
-    private musicToString(music: IMusic) {
+    protected musicToString(music: IMusic) {
         return `[${music.detail.title} - ${music.detail.author}](${music.url})`.replaceAll(
             "*",
             "\\*"
