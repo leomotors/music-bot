@@ -24,6 +24,7 @@ export interface IMusic {
     url: string;
     detail: VideoDetails;
     rawmeta: videoInfo;
+    requested_by: string;
 }
 
 // @ts-ignore
@@ -36,6 +37,7 @@ interface MusicState {
     is_looping: boolean;
     is_playing: boolean;
     channel_id: string | null;
+    playing_since: number;
 }
 
 function defaultMusicState() {
@@ -46,6 +48,7 @@ function defaultMusicState() {
         is_looping: false,
         is_playing: false,
         channel_id: null,
+        playing_since: 0,
     };
 }
 
@@ -161,7 +164,11 @@ export namespace Voice {
      * Add music to queue and play it if not playing
      * @returns Meta Info of the Video or string indicating failure reason
      */
-    export async function addMusicToQueue(guildId: string, url: string) {
+    export async function addMusicToQueue(
+        guildId: string,
+        url: string,
+        requester: string
+    ) {
         if (!ytdl.validateURL(url)) {
             url = (await YoutubeHelper.searchVideo(url))[0]?.link ?? "";
             if (!url) return "No results found";
@@ -171,7 +178,12 @@ export namespace Voice {
         const detail = meta.player_response.videoDetails;
 
         const state = getState(guildId);
-        state.music_queue.push({ url, detail, rawmeta: meta });
+        state.music_queue.push({
+            url,
+            detail,
+            rawmeta: meta,
+            requested_by: requester,
+        });
 
         if (!state.is_playing) playNextMusicInQueue(guildId);
 
@@ -218,6 +230,7 @@ export namespace Voice {
         audioPlayer.play(resource);
 
         state.is_playing = true;
+        state.playing_since = new Date().getTime();
 
         return new Promise<boolean>((resolve, reject) => {
             audioPlayer.on(AudioPlayerStatus.Idle, () => {

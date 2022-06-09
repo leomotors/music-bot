@@ -100,14 +100,23 @@ export class Music extends CogSlashClass {
         return res.trim();
     }
 
-    private musicEmbed(ctx: CommandInteraction, fullmeta: videoInfo) {
+    private musicEmbed(
+        ctx: CommandInteraction,
+        requester: string,
+        fullmeta: videoInfo,
+        overrides?: { title: string; desc: string }
+    ) {
         const meta = fullmeta.player_response.videoDetails;
         const metalong = fullmeta.videoDetails;
 
         const emb = this.style
             .use(ctx)
-            .setTitle("Added to Queue")
-            .setDescription(`[${meta.title}](${metalong.video_url})`)
+            .setTitle(overrides?.title ?? "Added to Queue")
+            .setDescription(
+                `[${meta.title}](${metalong.video_url})${
+                    overrides?.desc ? "\n" + overrides.desc : ""
+                }`
+            )
             .setThumbnail(
                 meta.thumbnail.thumbnails[meta.thumbnail.thumbnails.length - 1]!
                     .url
@@ -131,7 +140,7 @@ export class Music extends CogSlashClass {
                 },
                 {
                     name: "🎫Requested By",
-                    value: `<@${ctx.user.id}>`,
+                    value: `<@${requester}>`,
                 },
                 {
                     name: "👁️Watch",
@@ -178,14 +187,18 @@ export class Music extends CogSlashClass {
 
         if (await this.joinHook(ctx)) return;
 
-        const fullmeta = await Voice.addMusicToQueue(ctx.guildId!, song);
+        const fullmeta = await Voice.addMusicToQueue(
+            ctx.guildId!,
+            song,
+            ctx.user.id
+        );
 
         if (typeof fullmeta == "string") {
             await ctx.followUp("Cannot find any video with that name");
             return;
         }
 
-        const emb = this.musicEmbed(ctx, fullmeta);
+        const emb = this.musicEmbed(ctx, ctx.user.id, fullmeta);
 
         await ctx.followUp({ embeds: [emb] });
     }
@@ -219,6 +232,43 @@ export class Music extends CogSlashClass {
         state.is_looping = !state.is_looping;
 
         await ctx.reply(state.is_looping ? "🔁" : "🔂");
+    }
+
+    @SlashCommand(AutoBuilder("Prints the current song"))
+    async now(ctx: CommandInteraction) {
+        const state = getState(ctx.guildId!);
+
+        if (!state.now_playing) {
+            await ctx.reply("Nothing is playing right now!");
+            return;
+        }
+
+        let progressed = Math.round(
+            (new Date().getTime() - state.playing_since) / 1000
+        );
+        const total =
+            +state.now_playing.rawmeta.player_response.videoDetails
+                .lengthSeconds;
+        progressed = Math.min(progressed, total);
+
+        const parts = 69;
+
+        const part = Math.round((progressed * parts) / total);
+        const prog = `**${"-".repeat(part)}・${"-".repeat(
+            parts - part - 1
+        )}**\n**${this.parseLength(progressed)} / ${this.parseLength(total)}**`;
+
+        const emb = this.musicEmbed(
+            ctx,
+            state.now_playing.requested_by,
+            state.now_playing.rawmeta,
+            {
+                title: "Now Playing",
+                desc: prog,
+            }
+        );
+
+        await ctx.reply({ embeds: [emb] });
     }
 
     @SlashCommand(
@@ -309,7 +359,8 @@ export class Music extends CogSlashClass {
             if (await this.joinHook(ctx)) return;
             const prom = Voice.addMusicToQueue(
                 ctx.guildId!,
-                interaction.values[0]!
+                interaction.values[0]!,
+                ctx.user.id
             );
 
             let newtext = "";
@@ -330,7 +381,11 @@ export class Music extends CogSlashClass {
             await interaction.followUp({
                 embeds: [
                     emb.setDescription(newtext),
-                    this.musicEmbed(ctx, (await prom) as videoInfo),
+                    this.musicEmbed(
+                        ctx,
+                        ctx.user.id,
+                        (await prom) as videoInfo
+                    ),
                 ],
                 components: [],
             });
