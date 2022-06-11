@@ -238,7 +238,7 @@ export class Music extends CogSlashClass {
     async now(ctx: CommandInteraction) {
         const state = getState(ctx.guildId!);
 
-        if (!state.now_playing) {
+        if (!state.is_playing || !state.now_playing) {
             await ctx.reply("Nothing is playing right now!");
             return;
         }
@@ -254,9 +254,11 @@ export class Music extends CogSlashClass {
         const parts = 69;
 
         const part = Math.round((progressed * parts) / total);
-        const prog = `**${"-".repeat(part)}・${"-".repeat(
-            parts - part - 1
-        )}**\n**${this.parseLength(progressed)} / ${this.parseLength(total)}**`;
+        const prog = `**|${"-".repeat(part)}⬤${"-".repeat(
+            parts - part
+        )}|**\n**${this.parseLength(progressed)} / ${this.parseLength(
+            total
+        )}**`;
 
         const emb = this.musicEmbed(
             ctx,

@@ -2,6 +2,11 @@
 
 All notables change for @leomotors/music-bot will be noted here
 
+## [0.7.0] - 2022-06-11
+
+- Fixed bugs in /now
+- Update /now
+
 ## [0.5.0] - 2022-06-09
 
 - Added /now
