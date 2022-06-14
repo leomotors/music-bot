@@ -200,7 +200,7 @@ export class Music extends CogSlashClass {
 
         const emb = this.musicEmbed(ctx, ctx.user.id, fullmeta);
 
-        await ctx.followUp({ embeds: [emb] });
+        await ctx.followUp({ embeds: [emb.toJSON()] });
     }
 
     protected trimLabel(p1: string, p2: string) {
@@ -270,7 +270,7 @@ export class Music extends CogSlashClass {
             }
         );
 
-        await ctx.reply({ embeds: [emb] });
+        await ctx.reply({ embeds: [emb.toJSON()] });
     }
 
     @SlashCommand(
@@ -322,7 +322,7 @@ export class Music extends CogSlashClass {
             .setDescription(text || "NO RESULT");
 
         if (ss.length < 1) {
-            await ctx.followUp({ embeds: [emb] });
+            await ctx.followUp({ embeds: [emb.toJSON()] });
             return;
         }
 
@@ -382,12 +382,12 @@ export class Music extends CogSlashClass {
 
             await interaction.followUp({
                 embeds: [
-                    emb.setDescription(newtext),
+                    emb.setDescription(newtext).toJSON(),
                     this.musicEmbed(
                         ctx,
                         ctx.user.id,
                         (await prom) as videoInfo
-                    ),
+                    ).toJSON(),
                 ],
                 components: [],
             });
@@ -395,7 +395,7 @@ export class Music extends CogSlashClass {
             this.garbage.add(thisId);
         };
 
-        await ctx.followUp({ embeds: [emb], components: [row] });
+        await ctx.followUp({ embeds: [emb.toJSON()], components: [row] });
     }
 
     protected musicToString(music: IMusic) {
@@ -436,7 +436,7 @@ export class Music extends CogSlashClass {
             .setTitle("Music Queue")
             .setDescription(text || "**The Queue is Empty!**");
 
-        await ctx.reply({ embeds: [emb] });
+        await ctx.reply({ embeds: [emb.toJSON()] });
     }
 
     @SlashCommand(AutoBuilder("Skip the current song"))
