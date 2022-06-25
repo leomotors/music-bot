@@ -9,7 +9,7 @@
   "typings": "./dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "build-inner": "tsc && tsc -p tsconfig.bruh.json",
+    "build-inner": "tsc && node postbuild.script.js dist/*.js",
     "build": "yarn lm-config && yarn build-inner",
     "format": "prettier --write \"{src,tests}/**/*.{js,ts}\"",
     "lint": "eslint src && prettier --check \"{src,tests}/**/*.{js,ts}\"",
@@ -30,12 +30,14 @@
     "libsodium-wrappers": "^0.7.10",
     "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
-    "typescript": "^4.7.4"
+    "typedoc": "^0.22.18",
+    "typescript": "^4.7.4",
+    "uglify-js": "^3.16.1"
   },
   "dependencies": {
     "@discordjs/voice": "^0.10.0",
     "@yimura/scraper": "^1.2.3",
-    "cocoa-discord-utils": "^2.0.0-beta.1",
+    "cocoa-discord-utils": "^2.0.0-beta.3",
     "uuid": "^8.3.2",
     "ytdl-core": "^4.11.0"
   },

@@ -1,11 +1,13 @@
 import { EmbedStyle } from "cocoa-discord-utils";
-import { CogSlashClass, SlashCommand } from "cocoa-discord-utils/slash/class";
-import { CocoaBuilder, CocoaOption } from "cocoa-discord-utils/template";
+import {
+    CogSlashClass,
+    SlashCommand,
+    Param,
+} from "cocoa-discord-utils/slash/class";
 
 import {
     ActionRowBuilder,
     Awaitable,
-    ChatInputCommandInteraction,
     Client,
     SelectMenuBuilder,
     SelectMenuInteraction,
@@ -101,7 +103,7 @@ export class Music extends CogSlashClass {
     }
 
     protected musicEmbed(
-        ctx: ChatInputCommandInteraction,
+        ctx: SlashCommand.Context,
         requester: string,
         fullmeta: videoInfo,
         overrides?: { title: string; desc: string }
@@ -159,7 +161,7 @@ export class Music extends CogSlashClass {
      * @returns `true` if should ends the function,
      * it will followUp the interaction printing error message
      */
-    protected async joinHook(ctx: ChatInputCommandInteraction, force = false) {
+    protected async joinHook(ctx: SlashCommand.Context, force = false) {
         const res = await Voice.joinFromContext(ctx, force);
 
         if (res == Voice.JoinFailureReason.NoChannel) {
@@ -175,14 +177,11 @@ export class Music extends CogSlashClass {
         return true;
     }
 
-    @SlashCommand(
-        CocoaBuilder("Play a song/video from YouTube").addStringOption(
-            CocoaOption("song", "Youtube URL or Search Query", true)
-        )
-    )
-    async play(ctx: ChatInputCommandInteraction) {
-        const song = ctx.options.getString("song", true);
-
+    @SlashCommand("Play a song/video from YouTube")
+    async play(
+        ctx: SlashCommand.Context,
+        @Param.String("Youtube URL or Search Query") song: Param.String.Type
+    ) {
         await ctx.deferReply();
 
         if (await this.joinHook(ctx)) return;
@@ -212,30 +211,30 @@ export class Music extends CogSlashClass {
         return `${p1} ${p2}`;
     }
 
-    @SlashCommand(CocoaBuilder("Pause the song"))
-    async pause(ctx: ChatInputCommandInteraction) {
+    @SlashCommand("Pause the song")
+    async pause(ctx: SlashCommand.Context) {
         if (musicStates[ctx.guildId!]?.audio_player?.pause())
             await ctx.reply("⏸️");
         else await ctx.reply("❓");
     }
 
-    @SlashCommand(CocoaBuilder("Resume paused song"))
-    async resume(ctx: ChatInputCommandInteraction) {
+    @SlashCommand("Resume paused song")
+    async resume(ctx: SlashCommand.Context) {
         if (musicStates[ctx.guildId!]?.audio_player?.unpause())
             await ctx.reply("▶️");
         else await ctx.reply("❓");
     }
 
-    @SlashCommand(CocoaBuilder("Toggle Loop"))
-    async loop(ctx: ChatInputCommandInteraction) {
+    @SlashCommand("Toggle Loop")
+    async loop(ctx: SlashCommand.Context) {
         const state = getState(ctx.guildId!);
         state.is_looping = !state.is_looping;
 
         await ctx.reply(state.is_looping ? "🔁" : "🔂");
     }
 
-    @SlashCommand(CocoaBuilder("Prints the current song"))
-    async now(ctx: ChatInputCommandInteraction) {
+    @SlashCommand("Prints the current song")
+    async now(ctx: SlashCommand.Context) {
         const state = getState(ctx.guildId!);
 
         if (!state.is_playing || !state.now_playing) {
@@ -273,14 +272,11 @@ export class Music extends CogSlashClass {
         await ctx.reply({ embeds: [emb.toJSON()] });
     }
 
-    @SlashCommand(
-        CocoaBuilder("Remove x-th song from the queue").addIntegerOption(
-            CocoaOption("index", "Index of removal", true)
-        )
-    )
-    async remove(ctx: ChatInputCommandInteraction) {
-        const index = ctx.options.getInteger("index", true);
-
+    @SlashCommand("Remove x-th song from the queue")
+    async remove(
+        ctx: SlashCommand.Context,
+        @Param.Integer("Index of removal") index: Param.Integer.Type
+    ) {
         if (index <= 0) {
             await ctx.reply("❗Invalid Index");
             return;
@@ -297,14 +293,11 @@ export class Music extends CogSlashClass {
         }
     }
 
-    @SlashCommand(
-        CocoaBuilder("Search for Song on YouTube").addStringOption(
-            CocoaOption("song", "What to search for", true)
-        )
-    )
-    async search(ctx: ChatInputCommandInteraction) {
-        const song = ctx.options.getString("song", true);
-
+    @SlashCommand("Search for Song on YouTube")
+    async search(
+        ctx: SlashCommand.Context,
+        @Param.String("What to search for") song: Param.String.Type
+    ) {
         await ctx.deferReply();
 
         const songs = await YoutubeHelper.searchVideo(song);
@@ -346,7 +339,6 @@ export class Music extends CogSlashClass {
                 })
             );
 
-        // @ts-expect-error
         const row = new ActionRowBuilder().addComponents([menu]);
 
         this.selectMenuHandler = async (interaction) => {
@@ -396,7 +388,10 @@ export class Music extends CogSlashClass {
             this.garbage.add(thisId);
         };
 
-        await ctx.followUp({ embeds: [emb.toJSON()], components: [row] });
+        await ctx.followUp({
+            embeds: [emb.toJSON()],
+            components: [row.toJSON()],
+        });
     }
 
     protected musicToString(music: IMusic) {
@@ -406,8 +401,8 @@ export class Music extends CogSlashClass {
         );
     }
 
-    @SlashCommand(CocoaBuilder("Prints out the current Queue"))
-    async queue(ctx: ChatInputCommandInteraction) {
+    @SlashCommand("Prints out the current Queue")
+    async queue(ctx: SlashCommand.Context) {
         const state = getState(ctx.guildId!);
         const q = state.music_queue;
 
@@ -440,26 +435,24 @@ export class Music extends CogSlashClass {
         await ctx.reply({ embeds: [emb.toJSON()] });
     }
 
-    @SlashCommand(CocoaBuilder("Skip the current song"))
-    async skip(ctx: ChatInputCommandInteraction) {
+    @SlashCommand("Skip the current song")
+    async skip(ctx: SlashCommand.Context) {
         Voice.skipMusic(ctx.guildId!);
 
         await ctx.reply("⏩");
     }
 
     @SlashCommand(
-        CocoaBuilder(
-            "Clear all songs in the queue, stop playing and leave the channel"
-        )
+        "Clear all songs in the queue, stop playing and leave the channel"
     )
-    async clear(ctx: ChatInputCommandInteraction) {
+    async clear(ctx: SlashCommand.Context) {
         Voice.clearMusicQueue(ctx.guildId!);
 
         await ctx.reply("Cleared!");
     }
 
-    @SlashCommand(CocoaBuilder("(Force) moves the bot to your voice channel"))
-    async rejoin(ctx: ChatInputCommandInteraction) {
+    @SlashCommand("(Force) moves the bot to your voice channel")
+    async rejoin(ctx: SlashCommand.Context) {
         if (await this.joinHook(ctx, true)) return;
 
         await ctx.reply("✅ Rejoined");
