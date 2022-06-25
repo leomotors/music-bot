@@ -19,3 +19,5 @@ jobs:
         run: yarn build
       - name: ESLint & Prettier Check
         run: yarn lint
+      - name: Simple Test
+        run: yarn test
