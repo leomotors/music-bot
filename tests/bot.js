@@ -37,7 +37,7 @@ center.on("error", (name, err, ctx) => {
 
 client.on("ready", (cli) => {
     console.log(`Logged in as ${cli.user.tag}`);
-    center.syncCommands();
+    center.syncCommands(true);
 });
 
 new ConsoleManager().useLogout(client);

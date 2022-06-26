@@ -642,14 +642,14 @@ chownr@^2.0.0:
   resolved "https://registry.yarnpkg.com/chownr/-/chownr-2.0.0.tgz#15bfbe53d2eab4cf70f18a8cd68ebe5b3cb1dece"
   integrity sha512-bIomtDF5KGpdogkLd9VspvFzk9KfpyyGlS8YFVZl7TGPBHL5snIOnxeshwVgPteQ9b4Eydl+pVbIyE1DcvCWgQ==
 
-cocoa-discord-utils@^2.0.0-beta.3:
-  version "2.0.0-beta.3"
-  resolved "https://registry.yarnpkg.com/cocoa-discord-utils/-/cocoa-discord-utils-2.0.0-beta.3.tgz#f23ee42e1819d2ed1c7cfc5a4af3c74bc22d5bfd"
-  integrity sha512-MrGfN1Khpx0yhvywYRtGX6P8+/Wsrtc2OndB8iqe3nCPK5+mxonImjvO9pbw7iIdwC75dyWNws5Tr4lRhhjmcA==
+cocoa-discord-utils@^2.0.0-beta.5:
+  version "2.0.0-beta.5"
+  resolved "https://registry.yarnpkg.com/cocoa-discord-utils/-/cocoa-discord-utils-2.0.0-beta.5.tgz#d0ecb400785be0bdef45a1fefc3b4958a2b81fe4"
+  integrity sha512-MNq7PcF9WycKjLpY6/LzbYH1yLXo2rugQhajCpHAG5GXQi70WAGrOBefQOBZHXERMTrC6qJ6/7B+TPjiaO+YOg==
   dependencies:
     chalk "4.1.2"
     commander "^9.3.0"
-    discord.js "=14.0.0-dev.1656158629-c4653f9"
+    discord.js "^14.0.0-dev.1656158629-c4653f9"
 
 color-convert@^1.9.0:
   version "1.9.3"
@@ -745,7 +745,7 @@ discord-api-types@^0.33.3, discord-api-types@^0.33.5:
   resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.33.5.tgz#6548b70520f7b944c60984dca4ab58654d664a12"
   integrity sha512-dvO5M52v7m7Dy96+XUnzXNsQ/0npsYpU6dL205kAtEDueswoz3aU3bh1UMoK4cQmcGtB1YRyLKqp+DXi05lzFg==
 
-discord.js@=14.0.0-dev.1656158629-c4653f9:
+discord.js@^14.0.0-dev.1656158629-c4653f9:
   version "14.0.0-dev.1656158629-c4653f9"
   resolved "https://registry.yarnpkg.com/discord.js/-/discord.js-14.0.0-dev.1656158629-c4653f9.tgz#1d78ff80fd6edc95aedd586bc1c4af63504e0cb5"
   integrity sha512-lgHs1LGbAdlpBY5te+8iXMEAoA5FFB9wzFLqfzTedLCDM5IKuadXVUxwLktUmQk/jjeAzGD4+lQ+eEVfWTvWXQ==

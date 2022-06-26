@@ -9,9 +9,13 @@ import {
     ActionRowBuilder,
     Awaitable,
     Client,
-    SelectMenuBuilder,
     SelectMenuInteraction,
 } from "discord.js";
+
+import {
+    SelectMenuBuilder,
+    SelectMenuOptionBuilder,
+} from "@discordjs/builders";
 
 import chalk from "chalk";
 import { v4 as uuid } from "uuid";
@@ -269,7 +273,7 @@ export class Music extends CogSlashClass {
             }
         );
 
-        await ctx.reply({ embeds: [emb.toJSON()] });
+        await ctx.reply({ embeds: [emb] });
     }
 
     @SlashCommand("Remove x-th song from the queue")
@@ -315,7 +319,7 @@ export class Music extends CogSlashClass {
             .setDescription(text || "NO RESULT");
 
         if (ss.length < 1) {
-            await ctx.followUp({ embeds: [emb.toJSON()] });
+            await ctx.followUp({ embeds: [emb] });
             return;
         }
 
@@ -327,19 +331,22 @@ export class Music extends CogSlashClass {
             .setMinValues(1)
             .setMaxValues(1)
             .addOptions(
-                ...ss.map((vid) => {
-                    return {
-                        label: this.trimLabel(
-                            vid.title,
-                            `[${vid.duration_raw}]`
-                        ),
-                        description: "",
-                        value: vid.link,
-                    };
-                })
+                ss.map(
+                    (vid) =>
+                        new SelectMenuOptionBuilder({
+                            label: this.trimLabel(
+                                vid.title,
+                                `[${vid.duration_raw}]`
+                            ),
+                            description: "",
+                            value: vid.link,
+                        })
+                )
             );
 
-        const row = new ActionRowBuilder().addComponents([menu]);
+        const row = new ActionRowBuilder<SelectMenuBuilder>().addComponents([
+            menu,
+        ]);
 
         this.selectMenuHandler = async (interaction) => {
             if (interaction.customId != thisId) {
@@ -348,8 +355,6 @@ export class Music extends CogSlashClass {
                     this.yeetSelectMenu(interaction);
                 return;
             }
-
-            await interaction.deferUpdate();
 
             if (await this.joinHook(ctx)) return;
             const prom = Voice.addMusicToQueue(
@@ -373,7 +378,7 @@ export class Music extends CogSlashClass {
 
             this.selectMenuHandler = undefined;
 
-            await interaction.followUp({
+            await interaction.message.edit({
                 embeds: [
                     emb.setDescription(newtext).toJSON(),
                     this.musicEmbed(
@@ -389,8 +394,8 @@ export class Music extends CogSlashClass {
         };
 
         await ctx.followUp({
-            embeds: [emb.toJSON()],
-            components: [row.toJSON()],
+            embeds: [emb],
+            components: [row],
         });
     }
 
@@ -432,7 +437,7 @@ export class Music extends CogSlashClass {
             .setTitle("Music Queue")
             .setDescription(text || "**The Queue is Empty!**");
 
-        await ctx.reply({ embeds: [emb.toJSON()] });
+        await ctx.reply({ embeds: [emb] });
     }
 
     @SlashCommand("Skip the current song")
