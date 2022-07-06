@@ -380,12 +380,12 @@ export class Music extends CogSlashClass {
 
             await interaction.message.edit({
                 embeds: [
-                    emb.setDescription(newtext).toJSON(),
+                    emb.setDescription(newtext),
                     this.musicEmbed(
                         ctx,
                         ctx.user.id,
                         (await prom) as videoInfo
-                    ).toJSON(),
+                    ),
                 ],
                 components: [],
             });
