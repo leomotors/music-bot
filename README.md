@@ -61,7 +61,7 @@ You don't need to install `cocoa-discord-utils` but use one that is shipped with
 
 ![](./images/search2.png)
 
-*Note: It is known issues that search feature summon duplicate embed, I blame discord.js for this bug*
+*Note: Picture from previous release, lazy to update*
 
 ## Note
 
