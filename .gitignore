@@ -110,3 +110,7 @@ dist
 
 # Output
 typedoc-out
+
+# Yarn
+cache
+install-state.gz
