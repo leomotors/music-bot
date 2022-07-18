@@ -30,7 +30,7 @@ You don't need to install `cocoa-discord-utils` but use one that is shipped with
 ### Advanced Usage
 
 - Import music module to existing bot that use [Cocoa Discord Utils](https://github.com/Leomotors/cocoa-discord-utils)
-(See [harunon.js](https://github.com/CarelessDev/harunon.js) for example)
+(See [cminusminus](https://github.com/Leomotors/cminusminus) for minimal example or [Waifu Bot](https://github.com/Leomotors/waifu-bot) for sized bot)
 
 ## Prerequisites
 

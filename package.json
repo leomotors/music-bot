@@ -1,6 +1,6 @@
 {
   "name": "@leomotors/music-bot",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "discord.js music bot that can be run standalone or as a module for other bots",
   "repository": "https://github.com/Leomotors/music-bot",
   "author": "Leomotors",
