@@ -1,13 +1,16 @@
 {
   "name": "@leomotors/music-bot",
-  "version": "0.15.1",
+  "version": "0.20.0",
   "description": "discord.js music bot that can be run standalone or as a module for other bots",
-  "repository": "https://github.com/Leomotors/music-bot",
-  "author": "Leomotors",
-  "license": "MIT",
   "main": "dist/index.js",
   "typings": "./dist/index.d.ts",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Leomotors/music-bot"
+  },
+  "author": "Leomotors",
+  "license": "MIT",
   "scripts": {
     "build-inner": "tsc && node postbuild.script.js dist/*.js",
     "build": "yarn lm-config && yarn build-inner",
@@ -21,24 +24,29 @@
     "@discordjs/opus": "^0.8.0",
     "@leomotors/scripts": "^3.1.0",
     "@trivago/prettier-plugin-sort-imports": "^3.3.0",
-    "@types/node": "^18.0.6",
+    "@types/node": "^18.7.14",
     "@types/uuid": "^8.3.4",
-    "@typescript-eslint/eslint-plugin": "^5.30.6",
-    "@typescript-eslint/parser": "^5.30.6",
-    "dotenv": "^16.0.1",
-    "eslint": "^8.20.0",
+    "@typescript-eslint/eslint-plugin": "^5.36.1",
+    "@typescript-eslint/parser": "^5.36.1",
+    "cocoa-discord-utils": "^2.2.0",
+    "discord.js": "^14.3.0",
+    "dotenv": "^16.0.2",
+    "eslint": "^8.23.0",
     "libsodium-wrappers": "^0.7.10",
     "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
-    "typescript": "^4.7.4",
-    "uglify-js": "^3.16.2"
+    "typescript": "^4.8.2",
+    "uglify-js": "^3.17.0"
   },
   "dependencies": {
     "@discordjs/voice": "^0.11.0",
-    "@yimura/scraper": "^1.2.3",
-    "cocoa-discord-utils": "^2.0.0",
-    "uuid": "^8.3.2",
-    "ytdl-core": "^4.11.0"
+    "chalk": "^5.0.1",
+    "play-dl": "^1.9.5",
+    "uuid": "^8.3.2"
+  },
+  "peerDependencies": {
+    "cocoa-discord-utils": "^2.2.0",
+    "discord.js": "^14.3.0"
   },
   "keywords": [
     "discord-bot",
@@ -48,6 +56,5 @@
   ],
   "publishConfig": {
     "access": "public"
-  },
-  "packageManager": "yarn@3.2.1"
+  }
 }

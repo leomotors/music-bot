@@ -2,6 +2,12 @@
 
 All notables change for @leomotors/music-bot will be noted here
 
+## [0.20.0] - 2022-09-04
+
+- [BREAKING] Switched to `play-dl`, schema changed
+- [Experimental] Add playlist
+- [BREAKING] Some dependencies are now peer dependencies
+
 ## [0.15.1] - 2022-07-18
 
 - Upgraded to discord.js 14!

@@ -1,5 +1,3 @@
-import youtube, { Scraper } from "@yimura/scraper";
-
 import { Context } from "cocoa-discord-utils";
 import { Awaitable } from "cocoa-discord-utils/internal/base";
 
@@ -18,17 +16,12 @@ import {
     VoiceConnectionStatus,
 } from "@discordjs/voice";
 
-import ytdl, { VideoDetails, videoInfo } from "ytdl-core";
+import play, { YouTubeVideo } from "play-dl";
 
 export interface IMusic {
-    url: string;
-    detail: VideoDetails;
-    rawmeta: videoInfo;
+    video: YouTubeVideo;
     requested_by: string;
 }
-
-// @ts-ignore
-export const yt = new youtube.default() as Scraper;
 
 interface MusicState {
     music_queue: IMusic[];
@@ -73,9 +66,9 @@ export namespace VoiceHelper {
     }
 }
 
-export namespace YoutubeHelper {
-    export async function searchVideo(query: string) {
-        return (await yt.search(query)).videos;
+export namespace Utilities {
+    export function pickLast<T>(arr: T[]) {
+        return arr[arr.length - 1];
     }
 }
 
@@ -169,25 +162,54 @@ export namespace Voice {
         url: string,
         requester: string
     ) {
-        if (!ytdl.validateURL(url)) {
-            url = (await YoutubeHelper.searchVideo(url))[0]?.link ?? "";
-            if (!url) return "No results found";
-        }
+        let video: YouTubeVideo | undefined;
 
-        const meta = await ytdl.getInfo(url);
-        const detail = meta.player_response.videoDetails;
+        const type = play.yt_validate(url);
 
         const state = getState(guildId);
-        state.music_queue.push({
-            url,
-            detail,
-            rawmeta: meta,
-            requested_by: requester,
-        });
+
+        if (type == "search") {
+            video = (await play.search(url, { limit: 1 }))[0];
+
+            if (!video) {
+                return "No video found";
+            }
+
+            state.music_queue.push({
+                video,
+                requested_by: requester,
+            });
+        } else if (type == "video") {
+            video = (await play.video_basic_info(url)).video_details;
+
+            state.music_queue.push({
+                video,
+                requested_by: requester,
+            });
+        } else if (type == "playlist") {
+            const playlist = await play.playlist_info(url);
+            const all_videos = await playlist.all_videos();
+
+            if (all_videos.length < 1) {
+                return "This playlist has no videos!";
+            }
+
+            state.music_queue.push(
+                ...all_videos.map((video) => ({
+                    url: video.url,
+                    video,
+                    requested_by: requester,
+                }))
+            );
+
+            video = all_videos[0]!;
+        } else {
+            return "Unknown URL";
+        }
 
         if (!state.is_playing) playNextMusicInQueue(guildId);
 
-        return meta;
+        return video;
     }
 
     /**
@@ -195,7 +217,7 @@ export namespace Voice {
      * @returns `true` if music finished successfully,
      * `false` early if no connection found or later when error occured
      */
-    export function playNextMusicInQueue(guildId: string) {
+    export async function playNextMusicInQueue(guildId: string) {
         const state = getState(guildId);
 
         if (state.is_looping && state.now_playing) {
@@ -219,20 +241,18 @@ export namespace Voice {
         state.audio_player = audioPlayer;
         connection.subscribe(audioPlayer);
 
-        const stream = ytdl.downloadFromInfo(music.rawmeta, {
-            filter: "audioonly",
-            quality: "highestaudio",
-            highWaterMark: 1 << 25,
-            liveBuffer: 4000,
+        const stream = await play.stream(music.video.url);
+
+        const resource = createAudioResource(stream.stream, {
+            inputType: stream.type,
         });
 
-        const resource = createAudioResource(stream);
         audioPlayer.play(resource);
 
         state.is_playing = true;
         state.playing_since = new Date().getTime();
 
-        return new Promise<boolean>((resolve, reject) => {
+        return await new Promise<boolean>((resolve, reject) => {
             audioPlayer.on(AudioPlayerStatus.Idle, () => {
                 playNextMusicInQueue(guildId);
                 resolve(true);

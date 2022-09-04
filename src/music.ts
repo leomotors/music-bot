@@ -9,17 +9,13 @@ import {
     ActionRowBuilder,
     Awaitable,
     Client,
+    SelectMenuBuilder,
     SelectMenuInteraction,
 } from "discord.js";
 
-import {
-    SelectMenuBuilder,
-    SelectMenuOptionBuilder,
-} from "@discordjs/builders";
-
 import chalk from "chalk";
 import { v4 as uuid } from "uuid";
-import { videoInfo } from "ytdl-core";
+import { search, YouTubeVideo } from "play-dl";
 
 import {
     musicStates,
@@ -27,7 +23,7 @@ import {
     IMusic,
     getState,
     VoiceHelper,
-    YoutubeHelper,
+    Utilities,
 } from "./voice";
 
 export class Music extends CogSlashClass {
@@ -109,40 +105,35 @@ export class Music extends CogSlashClass {
     protected musicEmbed(
         ctx: SlashCommand.Context,
         requester: string,
-        fullmeta: videoInfo,
+        video: YouTubeVideo,
         overrides?: { title: string; desc: string }
     ) {
-        const meta = fullmeta.player_response.videoDetails;
-        const metalong = fullmeta.videoDetails;
-
         const emb = this.style
             .use(ctx)
             .setTitle(overrides?.title ?? "Added to Queue")
             .setDescription(
-                `[${meta.title}](${metalong.video_url})${
+                `[${video.title}](${video.url})${
                     overrides?.desc ? "\n" + overrides.desc : ""
                 }`
             )
-            .setThumbnail(
-                meta.thumbnail.thumbnails[meta.thumbnail.thumbnails.length - 1]!
-                    .url
-            )
+            .setThumbnail(Utilities.pickLast(video.thumbnails)?.url ?? "")
             .addInlineFields(
                 {
                     name: "🎙️Author",
-                    value: `[${meta.author}](${metalong.author.channel_url})`,
+                    value: `[${video.channel?.name ?? "Unknown"}](${
+                        video.channel?.url
+                    })`,
                 },
                 {
                     name: "🧑Subscribers",
-                    value: this.beautifyNumber(
-                        metalong.author.subscriber_count
-                    ),
+                    value: this.beautifyNumber(video.channel?.subscribers),
                 },
                 {
                     name: "⌛Duration",
-                    value: meta.isLiveContent
-                        ? "LIVE"
-                        : this.parseLength(+meta.lengthSeconds),
+                    value:
+                        video.durationInSec == 0
+                            ? "LIVE"
+                            : this.parseLength(video.durationInSec),
                 },
                 {
                     name: "🎫Requested By",
@@ -150,11 +141,11 @@ export class Music extends CogSlashClass {
                 },
                 {
                     name: "👁️Watch",
-                    value: this.beautifyNumber(meta.viewCount),
+                    value: this.beautifyNumber(video.views),
                 },
                 {
                     name: "👍Like",
-                    value: this.beautifyNumber(metalong.likes),
+                    value: this.beautifyNumber(video.likes),
                 }
             );
 
@@ -190,18 +181,18 @@ export class Music extends CogSlashClass {
 
         if (await this.joinHook(ctx)) return;
 
-        const fullmeta = await Voice.addMusicToQueue(
+        const video = await Voice.addMusicToQueue(
             ctx.guildId!,
             song,
             ctx.user.id
         );
 
-        if (typeof fullmeta == "string") {
+        if (typeof video == "string") {
             await ctx.followUp("Cannot find any video with that name");
             return;
         }
 
-        const emb = this.musicEmbed(ctx, ctx.user.id, fullmeta);
+        const emb = this.musicEmbed(ctx, ctx.user.id, video);
 
         await ctx.followUp({ embeds: [emb.toJSON()] });
     }
@@ -249,9 +240,7 @@ export class Music extends CogSlashClass {
         let progressed = Math.round(
             (new Date().getTime() - state.playing_since) / 1000
         );
-        const total =
-            +state.now_playing.rawmeta.player_response.videoDetails
-                .lengthSeconds;
+        const total = +state.now_playing.video.durationInSec;
         progressed = Math.min(progressed, total);
 
         const parts = 69;
@@ -266,7 +255,7 @@ export class Music extends CogSlashClass {
         const emb = this.musicEmbed(
             ctx,
             state.now_playing.requested_by,
-            state.now_playing.rawmeta,
+            state.now_playing.video,
             {
                 title: "Now Playing",
                 desc: prog,
@@ -290,7 +279,7 @@ export class Music extends CogSlashClass {
 
         if (music) {
             await ctx.reply(
-                `✅ Removed **${music.detail.title} - ${music.detail.author}**`
+                `✅ Removed **${music.video.title} - ${music.video.channel?.name}**`
             );
         } else {
             await ctx.reply("❗There is nothing to remove at that index!");
@@ -304,13 +293,13 @@ export class Music extends CogSlashClass {
     ) {
         await ctx.deferReply();
 
-        const songs = await YoutubeHelper.searchVideo(song);
+        const songs = await search(song, { limit: 10 });
 
         let text = "";
         const ss = songs.slice(0, 10);
 
         for (let i = 0; i < ss.length; i++) {
-            text += `**${i + 1})** ${ss[i]!.title} [${ss[i]!.duration_raw}]\n`;
+            text += `**${i + 1})** ${ss[i]!.title} [${ss[i]!.durationRaw}]\n`;
         }
 
         const emb = this.style
@@ -331,17 +320,13 @@ export class Music extends CogSlashClass {
             .setMinValues(1)
             .setMaxValues(1)
             .addOptions(
-                ss.map(
-                    (vid) =>
-                        new SelectMenuOptionBuilder({
-                            label: this.trimLabel(
-                                vid.title,
-                                `[${vid.duration_raw}]`
-                            ),
-                            description: "",
-                            value: vid.link,
-                        })
-                )
+                ss.map((vid) => ({
+                    label: this.trimLabel(
+                        vid.title ?? "",
+                        `[${vid.durationRaw}]`
+                    ),
+                    value: vid.url,
+                }))
             );
 
         const row = new ActionRowBuilder<SelectMenuBuilder>().addComponents([
@@ -365,13 +350,13 @@ export class Music extends CogSlashClass {
 
             let newtext = "";
             for (let i = 0; i < ss.length; i++) {
-                if (ss[i]!.link == interaction.values[0]) {
+                if (ss[i]!.url == interaction.values[0]) {
                     newtext += `**${i + 1}) ${ss[i]!.title} [${
-                        ss[i]!.duration_raw
+                        ss[i]!.durationRaw
                     }]**\n`;
                 } else {
                     newtext += `~~**${i + 1})** ${ss[i]!.title} [${
-                        ss[i]!.duration_raw
+                        ss[i]!.durationRaw
                     }]~~\n`;
                 }
             }
@@ -384,7 +369,7 @@ export class Music extends CogSlashClass {
                     this.musicEmbed(
                         ctx,
                         ctx.user.id,
-                        (await prom) as videoInfo
+                        (await prom) as YouTubeVideo
                     ),
                 ],
                 components: [],
@@ -400,7 +385,7 @@ export class Music extends CogSlashClass {
     }
 
     protected musicToString(music: IMusic) {
-        return `[${music.detail.title} - ${music.detail.author}](${music.url})`.replaceAll(
+        return `[${music.video.title} - ${music.video.channel?.name}](${music.video.url})`.replaceAll(
             "*",
             "\\*"
         );

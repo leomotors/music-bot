@@ -3,7 +3,7 @@ import "dotenv/config";
 
 import { checkLogin, ConsoleManager, EmbedStyle } from "cocoa-discord-utils";
 import { SlashCenter } from "cocoa-discord-utils/slash";
-import { DJCocoaOptions } from "cocoa-discord-utils/template";
+import { CocoaIntent } from "cocoa-discord-utils/template";
 
 import { Client } from "discord.js";
 
@@ -14,7 +14,7 @@ import { Music } from "../dist";
 // * Also minimum code required to fire the bot
 // * Good Example!
 
-const client = new Client(DJCocoaOptions);
+const client = new Client(new CocoaIntent().useGuildSlash().useGuildVoice());
 const style = new EmbedStyle({
     author: "invoker",
     color: 0xd7f6fc,
