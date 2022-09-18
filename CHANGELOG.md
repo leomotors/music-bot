@@ -2,6 +2,10 @@
 
 All notables change for @leomotors/music-bot will be noted here
 
+## [0.20.1] - 2022-09-18
+
+- chore: bump deps
+
 ## [0.20.0] - 2022-09-04
 
 - [BREAKING] Switched to `play-dl`, schema changed
