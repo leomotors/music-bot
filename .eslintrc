@@ -1,13 +1,14 @@
 {
     "root": true,
-    "extends": ["plugin:@typescript-eslint/recommended"],
     "parser": "@typescript-eslint/parser",
-    "plugins": ["@typescript-eslint"],
+    "extends": [
+        "plugin:@typescript-eslint/recommended",
+        "plugin:prettier/recommended"
+    ],
+    "plugins": ["@typescript-eslint", "import"],
     "rules": {
-        "indent": ["off", 4],
-        "quotes": ["off", "double"],
-        "semi": ["warn", "always"],
-        "eol-last": "warn",
+        "import/no-cycle": "warn",
+        "prettier/prettier": "warn",
         "@typescript-eslint/no-unused-vars": [
             "warn",
             {
@@ -22,6 +23,7 @@
         "@typescript-eslint/no-namespace": "off",
         "prefer-const": "warn"
     },
+    "ignorePatterns": ["dist/**/*"],
     "overrides": [
         {
             "files": ["tests/**/*"],

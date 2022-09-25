@@ -13,7 +13,8 @@
         "experimentalDecorators": true,
         "resolveJsonModule": true,
         "noUncheckedIndexedAccess": true,
-        "incremental": true
+        "incremental": true,
+        "importHelpers": true
     },
     "include": ["./src/**/*"]
 }

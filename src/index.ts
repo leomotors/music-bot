@@ -1,4 +1,4 @@
-export * from "./music";
+export { Music } from "./music.resolver";
 export * from "./voice";
 
 export * from "./config.g";

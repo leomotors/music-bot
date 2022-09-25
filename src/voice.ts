@@ -175,6 +175,8 @@ export namespace Voice {
                 return "No video found";
             }
 
+            video = (await play.video_basic_info(video.url)).video_details;
+
             state.music_queue.push({
                 video,
                 requested_by: requester,
@@ -195,11 +197,15 @@ export namespace Voice {
             }
 
             state.music_queue.push(
-                ...all_videos.map((video) => ({
-                    url: video.url,
-                    video,
-                    requested_by: requester,
-                }))
+                ...(await Promise.all(
+                    all_videos.map(async (video) => ({
+                        url: video.url,
+                        video: (
+                            await play.video_basic_info(video.url)
+                        ).video_details,
+                        requested_by: requester,
+                    }))
+                ))
             );
 
             video = all_videos[0]!;

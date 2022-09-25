@@ -15,40 +15,13 @@ import {
 
 import chalk from "chalk";
 import { search, YouTubeVideo } from "play-dl";
-import { v4 as uuid } from "uuid";
 
-import {
-    musicStates,
-    Voice,
-    IMusic,
-    getState,
-    VoiceHelper,
-    Utilities,
-} from "./voice";
+import { generateId, SearchEmbedIdPrefix } from "./constants";
+import { MusicService } from "./music.service";
+import { musicStates, Voice, getState, VoiceHelper } from "./voice";
 
 export class Music extends CogSlashClass {
     protected selectMenuHandler?: (i: SelectMenuInteraction) => Awaitable<void>;
-    protected garbage = new Set<string>();
-
-    /**
-     * Try to remove components from that select menu and add a message,
-     * catch error and prints if failed
-     */
-    protected async yeetSelectMenu(interaction: SelectMenuInteraction) {
-        await interaction
-            .update({
-                content:
-                    "This interaction is no longer tracked! Please create new one!",
-                components: [],
-            })
-            .catch(() =>
-                console.log(
-                    chalk.red(
-                        `Attempt to delete components failed: ${interaction.customId}`
-                    )
-                )
-            );
-    }
 
     constructor(
         private client: Client,
@@ -73,105 +46,6 @@ export class Music extends CogSlashClass {
         });
     }
 
-    protected parseLength(seconds: number) {
-        const minutes = Math.floor(seconds / 60);
-
-        seconds %= 60;
-
-        return `${minutes}:${seconds >= 10 ? `${seconds}` : `0${seconds}`}`;
-    }
-
-    /** Only works for positive number */
-    protected beautifyNumber(
-        n: number | string | undefined | null,
-        fallback = "Unknown"
-    ) {
-        if ((n ?? undefined) == undefined) return fallback;
-
-        n = "" + n;
-
-        let res = "";
-
-        for (let i = 0; i < n.length; i++) {
-            if ((n.length - i) % 3 == 0) {
-                res += " ";
-            }
-            res += n[i];
-        }
-
-        return res.trim();
-    }
-
-    protected musicEmbed(
-        ctx: SlashCommand.Context,
-        requester: string,
-        video: YouTubeVideo,
-        overrides?: { title: string; desc: string }
-    ) {
-        const emb = this.style
-            .use(ctx)
-            .setTitle(overrides?.title ?? "Added to Queue")
-            .setDescription(
-                `[${video.title}](${video.url})${
-                    overrides?.desc ? "\n" + overrides.desc : ""
-                }`
-            )
-            .setThumbnail(Utilities.pickLast(video.thumbnails)?.url ?? "")
-            .addInlineFields(
-                {
-                    name: "🎙️Author",
-                    value: `[${video.channel?.name ?? "Unknown"}](${
-                        video.channel?.url
-                    })`,
-                },
-                {
-                    name: "🧑Subscribers",
-                    value: this.beautifyNumber(video.channel?.subscribers),
-                },
-                {
-                    name: "⌛Duration",
-                    value:
-                        video.durationInSec == 0
-                            ? "LIVE"
-                            : this.parseLength(video.durationInSec),
-                },
-                {
-                    name: "🎫Requested By",
-                    value: `<@${requester}>`,
-                },
-                {
-                    name: "👁️Watch",
-                    value: this.beautifyNumber(video.views),
-                },
-                {
-                    name: "👍Like",
-                    value: this.beautifyNumber(video.likes),
-                }
-            );
-
-        return emb;
-    }
-
-    /**
-     * @returns `true` if should ends the function,
-     * it will followUp the interaction printing error message
-     */
-    protected async joinHook(ctx: SlashCommand.Context, force = false) {
-        const res = await Voice.joinFromContext(ctx, force);
-
-        if (res == Voice.JoinFailureReason.NoChannel) {
-            await ctx.followUp("Command Failed: No channel to join");
-        } else if (res == Voice.JoinFailureReason.NotJoinable) {
-            await ctx.followUp("Command Failed: This channel is not joinable");
-        } else if (res == Voice.JoinFailureReason.Other) {
-            await ctx.followUp("Command Failed: Unknown Reason");
-        } else {
-            return false;
-        }
-
-        return true;
-    }
-
     @SlashCommand("Play a song/video from YouTube")
     async play(
         ctx: SlashCommand.Context,
@@ -179,7 +53,7 @@ export class Music extends CogSlashClass {
     ) {
         await ctx.deferReply();
 
-        if (await this.joinHook(ctx)) return;
+        if (await MusicService.joinHook(ctx)) return;
 
         const video = await Voice.addMusicToQueue(
             ctx.guildId!,
@@ -192,18 +66,14 @@ export class Music extends CogSlashClass {
             return;
         }
 
-        const emb = this.musicEmbed(ctx, ctx.user.id, video);
+        const emb = MusicService.musicEmbed(
+            ctx,
+            ctx.user.id,
+            video,
+            this.style
+        );
 
         await ctx.followUp({ embeds: [emb.toJSON()] });
-    }
-
-    protected trimLabel(p1: string, p2: string) {
-        const lenlim = 96 - p2.length;
-        if (p1.length > 96 - p2.length) {
-            p1 = p1.slice(0, lenlim - 3) + "...";
-        }
-
-        return `${p1} ${p2}`;
     }
 
     @SlashCommand("Pause the song")
@@ -248,14 +118,15 @@ export class Music extends CogSlashClass {
         const part = Math.round((progressed * parts) / total);
         const prog = `**|${"-".repeat(part)}⬤${"-".repeat(
             parts - part
-        )}|**\n**${this.parseLength(progressed)} / ${this.parseLength(
-            total
-        )}**`;
+        )}|**\n**${MusicService.parseLength(
+            progressed
+        )} / ${MusicService.parseLength(total)}**`;
 
-        const emb = this.musicEmbed(
+        const emb = MusicService.musicEmbed(
             ctx,
             state.now_playing.requested_by,
             state.now_playing.video,
+            this.style,
             {
                 title: "Now Playing",
                 desc: prog,
@@ -312,7 +183,7 @@ export class Music extends CogSlashClass {
             return;
         }
 
-        const thisId = uuid().split("-")[0]!;
+        const thisId = generateId(SearchEmbedIdPrefix);
 
         const menu = new SelectMenuBuilder()
             .setCustomId(thisId)
@@ -321,7 +192,7 @@ export class Music extends CogSlashClass {
             .setMaxValues(1)
             .addOptions(
                 ss.map((vid) => ({
-                    label: this.trimLabel(
+                    label: MusicService.trimLabel(
                         vid.title ?? "",
                         `[${vid.durationRaw}]`
                     ),
@@ -336,12 +207,12 @@ export class Music extends CogSlashClass {
         this.selectMenuHandler = async (interaction) => {
             if (interaction.customId != thisId) {
                 // * Old Interaction
-                if (this.garbage.has(interaction.customId))
-                    this.yeetSelectMenu(interaction);
+                if (interaction.customId.startsWith(SearchEmbedIdPrefix))
+                    MusicService.yeetSelectMenu(interaction);
                 return;
             }
 
-            if (await this.joinHook(ctx)) return;
+            if (await MusicService.joinHook(ctx)) return;
             const prom = Voice.addMusicToQueue(
                 ctx.guildId!,
                 interaction.values[0]!,
@@ -366,29 +237,21 @@ export class Music extends CogSlashClass {
             await interaction.message.edit({
                 embeds: [
                     emb.setDescription(newtext),
-                    this.musicEmbed(
+                    MusicService.musicEmbed(
                         ctx,
                         ctx.user.id,
-                        (await prom) as YouTubeVideo
+                        (await prom) as YouTubeVideo,
+                        this.style
                     ),
                 ],
                 components: [],
             });
-
-            this.garbage.add(thisId);
         };
 
         await ctx.followUp({
             embeds: [emb],
             components: [row],
         });
-    }
-
-    protected musicToString(music: IMusic) {
-        return `[${music.video.title} - ${music.video.channel?.name}](${music.video.url})`.replaceAll(
-            "*",
-            "\\*"
-        );
     }
 
     @SlashCommand("Prints out the current Queue")
@@ -407,14 +270,14 @@ export class Music extends CogSlashClass {
             if (text) text += "\n";
             text +=
                 "**Now Playing**\n" +
-                this.musicToString(state.now_playing) +
+                MusicService.musicToString(state.now_playing) +
                 "\n";
         }
 
         if (q?.length > 0) text += "**Queue**\n";
 
         for (const [index, m] of Object.entries(q ?? [])) {
-            text += `**${+index + 1})** ${this.musicToString(m)}\n`;
+            text += `**${+index + 1})** ${MusicService.musicToString(m)}\n`;
         }
 
         const emb = this.style
@@ -443,7 +306,7 @@ export class Music extends CogSlashClass {
 
     @SlashCommand("(Force) moves the bot to your voice channel")
     async rejoin(ctx: SlashCommand.Context) {
-        if (await this.joinHook(ctx, true)) return;
+        if (await MusicService.joinHook(ctx, true)) return;
 
         await ctx.reply("✅ Rejoined");
     }
