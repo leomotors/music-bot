@@ -2,6 +2,10 @@
 
 All notables change for @leomotors/music-bot will be noted here
 
+## [0.22.0] - 2022-11-16
+
+- fix: export MusicService
+
 ## [0.21.0] - 2022-11-16
 
 - chore: bump deps
