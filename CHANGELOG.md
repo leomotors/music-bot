@@ -2,6 +2,10 @@
 
 All notables change for @leomotors/music-bot will be noted here
 
+## [0.21.0] - 2022-11-16
+
+- chore: bump deps
+
 ## [0.20.1] - 2022-09-18
 
 - chore: bump deps
