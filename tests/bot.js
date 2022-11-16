@@ -16,28 +16,28 @@ import { Music } from "../dist";
 
 const client = new Client(new CocoaIntent().useGuildSlash().useGuildVoice());
 const style = new EmbedStyle({
-    author: "invoker",
-    color: 0xd7f6fc,
-    footer: { text: "@leomotors/music-bot test mode" },
+  author: "invoker",
+  color: 0xd7f6fc,
+  footer: { text: "@leomotors/music-bot test mode" },
 });
 
 const center = new SlashCenter(client, process.env.GUILD_IDS?.split(","));
 center.addCog(new Music(client, style));
 center.useHelpCommand(style);
 center.on("error", (name, err, ctx) => {
-    // * FOR DEBUG PURPOSES ONLY, Don't do this on production
-    client.destroy();
-    setTimeout(() => {
-        throw err;
-    }, 100);
+  // * FOR DEBUG PURPOSES ONLY, Don't do this on production
+  client.destroy();
+  setTimeout(() => {
+    throw err;
+  }, 100);
 
-    // * Note: What you should do on Production
-    // await ctx.channel?.send(`Error ${err}`);
+  // * Note: What you should do on Production
+  // await ctx.channel?.send(`Error ${err}`);
 });
 
 client.on("ready", (cli) => {
-    console.log(`Logged in as ${cli.user.tag}`);
-    center.syncCommands(true);
+  console.log(`Logged in as ${cli.user.tag}`);
+  center.syncCommands(true);
 });
 
 new ConsoleManager().useLogout(client);

@@ -1,36 +1,36 @@
 {
-    "root": true,
-    "parser": "@typescript-eslint/parser",
-    "extends": [
-        "plugin:@typescript-eslint/recommended",
-        "plugin:prettier/recommended"
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "plugins": ["@typescript-eslint", "import"],
+  "rules": {
+    "import/no-cycle": "warn",
+    "prettier/prettier": "warn",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
     ],
-    "plugins": ["@typescript-eslint", "import"],
-    "rules": {
-        "import/no-cycle": "warn",
-        "prettier/prettier": "warn",
-        "@typescript-eslint/no-unused-vars": [
-            "warn",
-            {
-                "argsIgnorePattern": "^_",
-                "varsIgnorePattern": "^_",
-                "caughtErrorsIgnorePattern": "^_"
-            }
-        ],
-        "@typescript-eslint/no-non-null-assertion": "off",
-        "@typescript-eslint/ban-ts-comment": "off",
-        "@typescript-eslint/no-empty-function": "off",
-        "@typescript-eslint/no-namespace": "off",
-        "prefer-const": "warn"
-    },
-    "ignorePatterns": ["dist/**/*"],
-    "overrides": [
-        {
-            "files": ["tests/**/*"],
-            "rules": {
-                "@typescript-eslint/no-unused-vars": "off",
-                "@typescript-eslint/no-empty-function": "off"
-            }
-        }
-    ]
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-namespace": "off",
+    "prefer-const": "warn"
+  },
+  "ignorePatterns": ["dist/**/*"],
+  "overrides": [
+    {
+      "files": ["tests/**/*"],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/no-empty-function": "off"
+      }
+    }
+  ]
 }
