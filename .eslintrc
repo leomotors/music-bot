@@ -28,6 +28,12 @@
       "env": {
         "node": true
       }
+    },
+    {
+      "files": ["tools/**/*"],
+      "env": {
+        "node": true
+      }
     }
   ]
 }
