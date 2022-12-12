@@ -44,15 +44,6 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Build Test
-        run: pnpm build
-
-      - name: ESLint & Prettier Check
-        run: pnpm lint
-
-      - name: Simple Test (Making sure my assertion don't throw)
-        run: pnpm test
-
       - name: Publish Package
         run: |
           echo //registry.npmjs.org/:_authToken=$NPM_TOKEN >> .npmrc
