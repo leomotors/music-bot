@@ -6,7 +6,7 @@ on:
       - "*.*"
 
 jobs:
-  main:
+  github:
     name: Publish Release
     runs-on: ubuntu-latest
 
@@ -17,7 +17,6 @@ jobs:
       - name: Publish Release
         uses: Leomotors/auto-publish-release@main
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TITLE: "@leomotors/music-bot {VERSION}"
-          VERSION_MUST_INCREASE: true
-          TAG: ${{ github.ref }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          title: "@leomotors/music-bot"
+          tag: ${{ github.ref }}

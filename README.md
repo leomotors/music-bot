@@ -17,10 +17,6 @@ See Example at [tests/bot.js](./tests/bot.js)
 Apart from that, if you can understand the code [src/voice.ts](src/voice.ts),
 you can directly interact with api underneath, all of them is public.
 
-### Installation
-
-You don't need to install `cocoa-discord-utils` but use one that is shipped with this package, to avoid conflict
-
 ### Minimal Usage
 
 - Clone this repository, build the package and run tests/bot.js

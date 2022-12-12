@@ -4,7 +4,7 @@ import { CocoaOptions } from "cocoa-discord-utils/template";
 
 import { Client } from "discord.js";
 
-import { Music } from "../dist";
+import { Music } from "../dist/index.js";
 
 const client = new Client(CocoaOptions);
 const style = new EmbedStyle({});

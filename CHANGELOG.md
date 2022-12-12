@@ -2,6 +2,14 @@
 
 All notables change for @leomotors/music-bot will be noted here
 
+## [0.23.0] - ???
+
+- chore: bump deps
+
+- refactor: Migrated to new ESModule Standard (that shit one that force you to add .js on import),
+  this mean you no longer need `-es-module-specifier-resolution=node`
+  and it now supports `moduleResolution` of `node16` or `nodenext` for TypeScript
+
 ## [0.22.0] - 2022-11-16
 
 - fix: export MusicService

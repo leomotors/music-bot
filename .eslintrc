@@ -2,24 +2,18 @@
   "root": true,
   "parser": "@typescript-eslint/parser",
   "extends": [
+    "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:prettier/recommended"
+    "plugin:prettier/recommended",
+    "plugin:import/typescript"
   ],
   "plugins": ["@typescript-eslint", "import"],
   "rules": {
-    "import/no-cycle": "warn",
     "prettier/prettier": "warn",
-    "@typescript-eslint/no-unused-vars": [
-      "warn",
-      {
-        "argsIgnorePattern": "^_",
-        "varsIgnorePattern": "^_",
-        "caughtErrorsIgnorePattern": "^_"
-      }
-    ],
+    "eqeqeq": "warn",
+    "import/no-cycle": "error",
+    "no-constant-binary-expression": "error",
     "@typescript-eslint/no-non-null-assertion": "off",
-    "@typescript-eslint/ban-ts-comment": "off",
-    "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-namespace": "off",
     "prefer-const": "warn"
   },
@@ -28,8 +22,11 @@
     {
       "files": ["tests/**/*"],
       "rules": {
-        "@typescript-eslint/no-unused-vars": "off",
-        "@typescript-eslint/no-empty-function": "off"
+        "@typescript-eslint/no-empty-function": "off",
+        "@typescript-eslint/no-unused-vars": "off"
+      },
+      "env": {
+        "node": true
       }
     }
   ]

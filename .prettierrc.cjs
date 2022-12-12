@@ -1,4 +1,7 @@
-module.exports = {
+// @ts-check
+
+/** @type {import("@trivago/prettier-plugin-sort-imports").PrettierConfig} */
+const config = {
   bracketSpacing: true,
   tabWidth: 2,
   useTabs: false,
@@ -19,3 +22,5 @@ module.exports = {
   importOrderParserPlugins: ["typescript", "decorators-legacy"],
   plugins: ["@trivago/prettier-plugin-sort-imports"],
 };
+
+module.exports = config;

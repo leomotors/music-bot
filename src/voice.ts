@@ -55,12 +55,14 @@ export namespace VoiceHelper {
   export function forceDestroyConnection(conn: VoiceConnection | undefined) {
     try {
       conn?.destroy();
-    } catch (e) {}
+    } catch (e) {
+      // pass
+    }
   }
 
   export function isPaused(guildId: string) {
     return (
-      getState(guildId).audio_player?.state?.status == AudioPlayerStatus.Paused
+      getState(guildId).audio_player?.state?.status === AudioPlayerStatus.Paused
     );
   }
 }
@@ -89,7 +91,7 @@ export namespace Voice {
   ): Promise<JoinFailureReason> {
     const connection = getVoiceConnection(ctx.guildId!);
 
-    if (connection?.state.status == VoiceConnectionStatus.Ready && !force) {
+    if (connection?.state.status === VoiceConnectionStatus.Ready && !force) {
       return JoinFailureReason.AlreadyConnected;
     }
 
@@ -121,7 +123,7 @@ export namespace Voice {
       selfMute: false,
     });
 
-    connection.on(VoiceConnectionStatus.Disconnected, async (_, __) => {
+    connection.on(VoiceConnectionStatus.Disconnected, async () => {
       try {
         await Promise.race([
           entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
@@ -159,7 +161,7 @@ export namespace Voice {
 
     const state = getState(guildId);
 
-    if (type == "search") {
+    if (type === "search") {
       video = (await play.search(url, { limit: 1 }))[0];
 
       if (!video) {
@@ -172,14 +174,14 @@ export namespace Voice {
         video,
         requested_by: requester,
       });
-    } else if (type == "video") {
+    } else if (type === "video") {
       video = (await play.video_basic_info(url)).video_details;
 
       state.music_queue.push({
         video,
         requested_by: requester,
       });
-    } else if (type == "playlist") {
+    } else if (type === "playlist") {
       const playlist = await play.playlist_info(url);
       const all_videos = await playlist.all_videos();
 

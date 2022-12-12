@@ -1,2 +1,2 @@
 *
-!dist/**/*.{js,cjs,mjs,ts,d.ts,json}
+!dist/**/*.{js,cjs,mjs,ts,d.ts,json,map}

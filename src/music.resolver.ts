@@ -16,9 +16,9 @@ import {
 import chalk from "chalk";
 import { search, YouTubeVideo } from "play-dl";
 
-import { generateId, SearchEmbedIdPrefix } from "./constants";
-import { MusicService } from "./music.service";
-import { musicStates, Voice, getState, VoiceHelper } from "./voice";
+import { generateId, SearchEmbedIdPrefix } from "./constants.js";
+import { MusicService } from "./music.service.js";
+import { musicStates, Voice, getState, VoiceHelper } from "./voice.js";
 
 export class Music extends CogSlashClass {
   protected selectMenuHandler?: (i: SelectMenuInteraction) => Awaitable<void>;
@@ -53,7 +53,7 @@ export class Music extends CogSlashClass {
 
     const video = await Voice.addMusicToQueue(ctx.guildId!, song, ctx.user.id);
 
-    if (typeof video == "string") {
+    if (typeof video === "string") {
       await ctx.followUp("Cannot find any video with that name");
       return;
     }
@@ -189,7 +189,7 @@ export class Music extends CogSlashClass {
     const row = new ActionRowBuilder<SelectMenuBuilder>().addComponents([menu]);
 
     this.selectMenuHandler = async (interaction) => {
-      if (interaction.customId != thisId) {
+      if (interaction.customId !== thisId) {
         // * Old Interaction
         if (interaction.customId.startsWith(SearchEmbedIdPrefix))
           MusicService.yeetSelectMenu(interaction);
@@ -205,7 +205,7 @@ export class Music extends CogSlashClass {
 
       let newtext = "";
       for (let i = 0; i < ss.length; i++) {
-        if (ss[i]!.url == interaction.values[0]) {
+        if (ss[i]!.url === interaction.values[0]) {
           newtext += `**${i + 1}) ${ss[i]!.title} [${ss[i]!.durationRaw}]**\n`;
         } else {
           newtext += `~~**${i + 1})** ${ss[i]!.title} [${

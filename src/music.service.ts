@@ -6,7 +6,7 @@ import { SelectMenuInteraction } from "discord.js";
 import chalk from "chalk";
 import { YouTubeVideo } from "play-dl";
 
-import { IMusic, Utilities, Voice } from "./voice";
+import { IMusic, Utilities, Voice } from "./voice.js";
 
 export namespace MusicService {
   /**
@@ -42,14 +42,14 @@ export namespace MusicService {
     n: number | string | undefined | null,
     fallback = "Unknown"
   ) {
-    if ((n ?? undefined) == undefined) return fallback;
+    if ((n ?? undefined) === undefined) return fallback;
 
     n = "" + n;
 
     let res = "";
 
     for (let i = 0; i < n.length; i++) {
-      if ((n.length - i) % 3 == 0) {
+      if ((n.length - i) % 3 === 0) {
         res += " ";
       }
       res += n[i];
@@ -86,7 +86,7 @@ export namespace MusicService {
         {
           name: "⌛Duration",
           value:
-            video.durationInSec == 0
+            video.durationInSec === 0
               ? "LIVE"
               : parseLength(video.durationInSec),
         },
@@ -114,11 +114,11 @@ export namespace MusicService {
   export async function joinHook(ctx: SlashCommand.Context, force = false) {
     const res = await Voice.joinFromContext(ctx, force);
 
-    if (res == Voice.JoinFailureReason.NoChannel) {
+    if (res === Voice.JoinFailureReason.NoChannel) {
       await ctx.followUp("Command Failed: No channel to join");
-    } else if (res == Voice.JoinFailureReason.NotJoinable) {
+    } else if (res === Voice.JoinFailureReason.NotJoinable) {
       await ctx.followUp("Command Failed: This channel is not joinable");
-    } else if (res == Voice.JoinFailureReason.Other) {
+    } else if (res === Voice.JoinFailureReason.Other) {
       await ctx.followUp("Command Failed: Unknown Reason");
     } else {
       return false;
