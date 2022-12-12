@@ -1,7 +1,7 @@
 import { EmbedStyle } from "cocoa-discord-utils";
 import { SlashCommand } from "cocoa-discord-utils/slash/class";
 
-import { SelectMenuInteraction } from "discord.js";
+import { StringSelectMenuInteraction } from "discord.js";
 
 import chalk from "chalk";
 import { YouTubeVideo } from "play-dl";
@@ -13,7 +13,9 @@ export namespace MusicService {
    * Try to remove components from that select menu and add a message,
    * catch error and prints if failed
    */
-  export async function yeetSelectMenu(interaction: SelectMenuInteraction) {
+  export async function yeetSelectMenu(
+    interaction: StringSelectMenuInteraction
+  ) {
     await interaction
       .update({
         content:

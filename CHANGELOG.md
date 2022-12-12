@@ -2,13 +2,14 @@
 
 All notables change for @leomotors/music-bot will be noted here
 
-## [0.23.0] - ???
+## [0.23.0] - 2022-12-12
 
 - chore: bump deps
-
 - refactor: Migrated to new ESModule Standard (that shit one that force you to add .js on import),
   this mean you no longer need `-es-module-specifier-resolution=node`
   and it now supports `moduleResolution` of `node16` or `nodenext` for TypeScript
+- refactor: deprecated APIs
+- fix: a bug where the bot can no longer play music on that server after /clear is used
 
 ## [0.22.0] - 2022-11-16
 

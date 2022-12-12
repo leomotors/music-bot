@@ -266,7 +266,6 @@ export namespace Voice {
    */
   export function skipMusic(guildId: string) {
     const connection = getVoiceConnection(guildId);
-
     if (!connection) return false;
 
     playNextMusicInQueue(guildId);
@@ -283,6 +282,8 @@ export namespace Voice {
     state.audio_player?.stop();
     state.now_playing = undefined;
     state.is_looping = false;
+    state.is_playing = false;
+    state.channel_id = null;
 
     VoiceHelper.forceDestroyConnection(getVoiceConnection(guildId));
   }

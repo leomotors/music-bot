@@ -9,8 +9,8 @@ import {
   ActionRowBuilder,
   Awaitable,
   Client,
-  SelectMenuBuilder,
-  SelectMenuInteraction,
+  StringSelectMenuBuilder,
+  StringSelectMenuInteraction,
 } from "discord.js";
 
 import chalk from "chalk";
@@ -21,7 +21,9 @@ import { MusicService } from "./music.service.js";
 import { musicStates, Voice, getState, VoiceHelper } from "./voice.js";
 
 export class Music extends CogSlashClass {
-  protected selectMenuHandler?: (i: SelectMenuInteraction) => Awaitable<void>;
+  protected selectMenuHandler?: (
+    i: StringSelectMenuInteraction
+  ) => Awaitable<void>;
 
   constructor(
     private client: Client,
@@ -31,7 +33,7 @@ export class Music extends CogSlashClass {
     super("Music", description ?? "Cog for playing musics from YouTube");
 
     client.on("interactionCreate", async (interaction) => {
-      if (interaction.isSelectMenu() && this.selectMenuHandler) {
+      if (interaction.isStringSelectMenu() && this.selectMenuHandler) {
         try {
           await this.selectMenuHandler(interaction);
         } catch (err) {
@@ -171,7 +173,7 @@ export class Music extends CogSlashClass {
 
     const thisId = generateId(SearchEmbedIdPrefix);
 
-    const menu = new SelectMenuBuilder()
+    const menu = new StringSelectMenuBuilder()
       .setCustomId(thisId)
       .setPlaceholder("Select your Song")
       .setMinValues(1)
@@ -186,7 +188,9 @@ export class Music extends CogSlashClass {
         }))
       );
 
-    const row = new ActionRowBuilder<SelectMenuBuilder>().addComponents([menu]);
+    const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([
+      menu,
+    ]);
 
     this.selectMenuHandler = async (interaction) => {
       if (interaction.customId !== thisId) {
