@@ -6,10 +6,13 @@ on:
 jobs:
   main:
     name: Many Tests
-    runs-on: ubuntu-latest
+
     strategy:
       matrix:
+        os: [ubuntu-22.04, ubuntu-20.04]
         node_version: [16, 18]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: actions/checkout
@@ -35,5 +38,5 @@ jobs:
       - name: ESLint & Prettier Check
         run: pnpm lint
 
-      - name: Simple Test
+      - name: Simple Test (Making sure my assertion don't throw)
         run: pnpm test
