@@ -16,6 +16,6 @@ function isPrerelease(version) {
 
 const isPre = isPrerelease(ref);
 
-const cmd = `pnpm publish --tag ${isPre ? "beta" : "latest"}`;
+const cmd = `pnpm publish --no-git-checks --tag ${isPre ? "beta" : "latest"}`;
 
 execSync(cmd);
