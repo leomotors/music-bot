@@ -2,6 +2,10 @@
 
 All notables change for @leomotors/music-bot will be noted here
 
+## [0.24.0] - 2023-03-19
+
+- chore: bump deps, this will fix bug that caused connections to drop off
+
 ## [0.23.0] - 2022-12-12
 
 - chore: bump deps
