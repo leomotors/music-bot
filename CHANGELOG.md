@@ -2,6 +2,15 @@
 
 All notables change for @leomotors/music-bot will be noted here
 
+## [1.0.0] - 2023-09-??
+
+- chore: bump deps
+- style: format prettier 3
+- refactor!: remove namespace
+- feat!: partially rewritten to make it more customizable, ex: Playable interface
+- refactor!: remove subscribers and like from embed, so extra data fetch is not needed
+- refactor!: remove time progress from /now
+
 ## [0.24.0] - 2023-03-19
 
 - chore: bump deps, this will fix bug that caused connections to drop off

@@ -10,18 +10,16 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04]
-        node_version: [16, 18]
+        node_version: [18, 20]
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: actions/checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
-        with:
-          version: 7
 
       - name: Setup node with cache
         uses: actions/setup-node@v3
