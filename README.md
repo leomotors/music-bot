@@ -1,5 +1,7 @@
 # @leomotors/music-bot
 
+:warning: This repo has been moved to [cocoa-discord](https://github.com/Leomotors/cocoa-discord) as `@cocoa-discord/music-module`
+
 [![](https://img.shields.io/npm/v/@leomotors/music-bot.svg?maxAge=3600)](https://www.npmjs.com/package/@leomotors/music-bot)
 [![](https://img.shields.io/npm/dt/@leomotors/music-bot.svg?maxAge=3600)](https://www.npmjs.com/package/@leomotors/music-bot)
 [![](https://github.com/Leomotors/music-bot/actions/workflows/test.yml/badge.svg)](https://github.com/Leomotors/music-bot/actions)
@@ -26,14 +28,14 @@ you can directly interact with api underneath, all of them is public.
 ### Advanced Usage
 
 - Import music module to existing bot that use [Cocoa Discord Utils](https://github.com/Leomotors/cocoa-discord-utils)
-(See [cminusminus](https://github.com/Leomotors/cminusminus) for minimal example or [Waifu Bot](https://github.com/Leomotors/waifu-bot) for sized bot)
+  (See [cminusminus](https://github.com/Leomotors/cminusminus) for minimal example or [Waifu Bot](https://github.com/Leomotors/waifu-bot) for sized bot)
 
 ## Prerequisites
 
 - node 16 (Minimum required by discord.js, What my bots are optimized for)
 
 - **IMPORTANT** [Encoding Libraries](https://www.npmjs.com/package/@discordjs/voice#dependencies)
-(This library does not ship these encoding libraries, so you can freely decide which one to install)
+  (This library does not ship these encoding libraries, so you can freely decide which one to install)
 
 ## ✨Features
 
@@ -57,7 +59,7 @@ you can directly interact with api underneath, all of them is public.
 
 ![](./images/search2.png)
 
-*Note: Picture from previous release, lazy to update*
+_Note: Picture from previous release, lazy to update_
 
 ## Note
 
